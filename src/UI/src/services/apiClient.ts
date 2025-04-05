@@ -1,6 +1,7 @@
 
 import axios from 'axios';
 import { config } from '@/config';
+import { handleApiError } from '@/utils/errorHandler';
 
 // Create an axios instance with default configuration
 export const apiClient = axios.create({
@@ -34,11 +35,32 @@ apiClient.interceptors.response.use(
     if (error.response && error.response.status === 401) {
       localStorage.removeItem('jwt_token');
       localStorage.removeItem('user_data');
-      // Optionally redirect to login page
-      // window.location.href = '/login';
+      // Redirect to login page
+      window.location.href = '/login';
+      return Promise.reject(error);
     }
-    return Promise.reject(error);
+    
+    // Use the error handler utility for other errors
+    return handleApiError(error);
   }
 );
+
+// Model-specific API methods
+export const modelApi = {
+  // Run model prediction with provided data
+  predict: async (modelType, inputData) => {
+    return apiClient.post(`${config.api.endpoints.analysis}/${modelType}`, inputData);
+  },
+  
+  // Get model metadata (version, parameters, etc)
+  getModelInfo: async (modelType) => {
+    return apiClient.get(`${config.api.endpoints.analysis}/model-info/${modelType}`);
+  },
+  
+  // Get model performance metrics
+  getModelMetrics: async (modelType) => {
+    return apiClient.get(`${config.api.endpoints.analysis}/metrics/${modelType}`);
+  }
+};
 
 export default apiClient;
