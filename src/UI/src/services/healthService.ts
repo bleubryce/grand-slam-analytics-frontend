@@ -64,6 +64,7 @@ export const healthService = {
    */
   checkModelHealth: async (): Promise<{ healthy: boolean; message: string }> => {
     try {
+      // Updated to match your GitHub repository's endpoint structure
       const response = await healthClient.get('/api/ml/health');
       return {
         healthy: response.status === 200,
