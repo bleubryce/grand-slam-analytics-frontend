@@ -36,13 +36,17 @@ const Login = () => {
       navigate("/dashboard");
     } catch (error) {
       console.error("Login failed:", error);
-      toast({
-        title: "Login failed",
-        description: "Invalid username or password. Please try again.",
-        variant: "destructive",
-      });
+      // Toast is handled in the auth context
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  // For development, auto-fill credentials for easy login
+  const fillDemoCredentials = () => {
+    if (process.env.NODE_ENV === 'development') {
+      setUsername('demo');
+      setPassword('password');
     }
   };
 
@@ -72,10 +76,11 @@ const Login = () => {
                   <Label htmlFor="username">Username</Label>
                   <Input
                     id="username"
-                    placeholder="Enter your username"
+                    placeholder="Enter your username (any value works)"
                     value={username}
                     onChange={(e) => setUsername(e.target.value)}
                     required
+                    onClick={fillDemoCredentials}
                   />
                 </div>
                 <div className="space-y-2">
@@ -91,12 +96,17 @@ const Login = () => {
                   <Input
                     id="password"
                     type="password"
-                    placeholder="Enter your password"
+                    placeholder="Enter your password (any value works)"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     required
                   />
                 </div>
+                {process.env.NODE_ENV === 'development' && (
+                  <div className="text-xs text-muted-foreground">
+                    <p>In development mode, any username and password will work.</p>
+                  </div>
+                )}
               </CardContent>
               <CardFooter>
                 <Button 

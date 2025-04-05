@@ -1,6 +1,6 @@
 
 import React, { createContext, useState, useContext, useEffect, ReactNode } from 'react';
-import { authService, User, LoginResponse, ApiResponse } from '../services/api';
+import { authService, User, ApiResponse } from '../services/api';
 import { config } from '../config';
 import { useToast } from '@/hooks/use-toast';
 
@@ -35,9 +35,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
 
     try {
-      // We'd normally validate the token here via an API call
-      // This is a placeholder until we have a real endpoint
-      const userData = JSON.parse(localStorage.getItem('user_data') || 'null');
+      const response = await authService.getCurrentUser();
+      const userData = response.data.data;
+      
       if (userData) {
         setUser(userData);
         return true;
@@ -56,15 +56,22 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     try {
       const response = await authService.login(credentials);
       const { token, user } = response.data.data;
+      
       localStorage.setItem(config.auth.tokenKey, token);
       localStorage.setItem('user_data', JSON.stringify(user));
       setUser(user);
+      
       toast({
         title: 'Welcome back!',
         description: `You've successfully logged in as ${user.username}`,
       });
     } catch (error) {
       console.error('Login failed:', error);
+      toast({
+        title: 'Login failed',
+        description: 'Invalid username or password. Please try again.',
+        variant: 'destructive',
+      });
       throw error;
     } finally {
       setLoading(false);
