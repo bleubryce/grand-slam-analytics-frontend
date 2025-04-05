@@ -1,6 +1,7 @@
 
 import React, { createContext, useState, useContext, useEffect, ReactNode } from 'react';
-import { authService, User, ApiResponse } from '../services/api';
+import { authService } from '../services/authService';
+import { User, ApiResponse } from '../services/types';
 import { config } from '../config';
 import { useToast } from '@/hooks/use-toast';
 
