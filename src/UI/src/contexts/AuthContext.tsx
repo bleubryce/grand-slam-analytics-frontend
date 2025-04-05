@@ -25,6 +25,17 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const { toast } = useToast();
 
   useEffect(() => {
+    // On initial load, check if user is already authenticated
+    const storedUser = localStorage.getItem('user_data');
+    if (storedUser) {
+      try {
+        setUser(JSON.parse(storedUser));
+      } catch (e) {
+        console.error('Failed to parse stored user data:', e);
+        localStorage.removeItem('user_data');
+      }
+    }
+    
     checkAuth().finally(() => setLoading(false));
   }, []);
 
