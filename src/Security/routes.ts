@@ -10,6 +10,7 @@ const securityController = new SecurityController();
 router.post('/login', securityController.login.bind(securityController));
 router.post('/register', securityController.register.bind(securityController));
 router.get('/validate', securityController.validateToken.bind(securityController));
+router.get('/me', requireAuth, securityController.getCurrentUser.bind(securityController));
 router.post('/logout', requireAuth, (req, res) => {
   // In a stateless JWT authentication system, the client simply discards the token
   // Server-side we just return a success response

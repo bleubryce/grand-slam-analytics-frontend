@@ -1,8 +1,10 @@
+
 import express from 'express';
 import cors from 'cors';
 import { AnalysisEngine } from './Analysis/Engine/AnalysisEngine';
 import { DatabaseManager } from './Database/DatabaseManager';
 import { config } from './config';
+import authRoutes from './Security/routes';
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -19,6 +21,9 @@ const corsOptions = {
 // Middleware
 app.use(cors(corsOptions));
 app.use(express.json());
+
+// Register authentication routes
+app.use('/api/auth', authRoutes);
 
 // Basic route for testing
 app.get('/', (req, res) => {
@@ -112,4 +117,4 @@ async function startServer() {
   }
 }
 
-startServer(); 
+startServer();

@@ -1,4 +1,3 @@
-
 import { Request, Response } from 'express';
 import { SecurityService, User } from './service';
 import { createLogger } from '../utils/logger';
@@ -117,6 +116,29 @@ export class SecurityController {
       logger.error('Token validation error:', error);
       return res.status(401).json({ 
         error: 'Invalid token',
+        success: false
+      });
+    }
+  }
+
+  async getCurrentUser(req: Request, res: Response) {
+    try {
+      if (!req.user) {
+        return res.status(401).json({ 
+          error: 'Not authenticated', 
+          success: false
+        });
+      }
+      
+      return res.status(200).json({ 
+        user: req.user,
+        success: true,
+        message: 'User retrieved successfully'
+      });
+    } catch (error) {
+      logger.error('Get current user error:', error);
+      return res.status(500).json({ 
+        error: 'Internal server error',
         success: false
       });
     }
