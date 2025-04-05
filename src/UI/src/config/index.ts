@@ -1,8 +1,8 @@
 
 export const config = {
   api: {
-    baseUrl: import.meta.env.VITE_API_URL || 'http://localhost:3000/api/v1',
-    backendUrl: import.meta.env.VITE_BACKEND_API_URL || 'http://localhost:3000',
+    baseUrl: import.meta.env.VITE_API_URL || 'http://localhost:3001/api',
+    backendUrl: import.meta.env.VITE_BACKEND_API_URL || 'http://localhost:3001',
     timeout: 5000,
     endpoints: {
       teams: import.meta.env.VITE_API_TEAMS_ENDPOINT || '/api/analysis/team',

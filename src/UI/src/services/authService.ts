@@ -4,49 +4,21 @@ import { apiClient } from './apiClient';
 import { config } from '@/config';
 import { ApiResponse, LoginResponse, User } from './types';
 
-// Create a mock API response for development
-const createMockLoginResponse = (credentials: { username: string; password: string }): AxiosResponse<ApiResponse<LoginResponse>> => {
-  const mockUser: User = {
-    id: '1',
-    username: credentials.username,
-    email: `${credentials.username}@example.com`,
-    role: 'user'
-  };
-
-  const mockResponse: ApiResponse<LoginResponse> = {
-    status: 'success',
-    message: 'Login successful',
-    data: {
-      token: 'mock-jwt-token',
-      user: mockUser
-    },
-    timestamp: new Date().toISOString()
-  };
-
-  return {
-    data: mockResponse,
-    status: 200,
-    statusText: 'OK',
-    headers: {},
-    config: {} as any
-  };
-};
-
-// Auth Service
 class AuthService {
   private useMockResponse: boolean;
 
   constructor() {
     // Use mock responses in development if the backend is not available
-    this.useMockResponse = config.app.environment === 'development';
+    // Set to false by default to use the real API endpoints
+    this.useMockResponse = config.app.environment === 'development' && import.meta.env.VITE_USE_MOCK_API === 'true';
   }
 
   async login(credentials: { username: string; password: string }): Promise<AxiosResponse<ApiResponse<LoginResponse>>> {
     try {
-      // For development, allow any username/password
+      // For development, allow any username/password if mocks are enabled
       if (this.useMockResponse) {
         console.log('Using mock login response in development');
-        return Promise.resolve(createMockLoginResponse(credentials));
+        return Promise.resolve(this.createMockLoginResponse(credentials));
       }
       
       // In production, call the real API
@@ -125,6 +97,34 @@ class AuthService {
         }
       }
     );
+  }
+
+  // Helper method to create mock login responses for development
+  private createMockLoginResponse(credentials: { username: string; password: string }): AxiosResponse<ApiResponse<LoginResponse>> {
+    const mockUser: User = {
+      id: '1',
+      username: credentials.username,
+      email: `${credentials.username}@example.com`,
+      role: 'user'
+    };
+
+    const mockResponse: ApiResponse<LoginResponse> = {
+      status: 'success',
+      message: 'Login successful',
+      data: {
+        token: 'mock-jwt-token',
+        user: mockUser
+      },
+      timestamp: new Date().toISOString()
+    };
+
+    return {
+      data: mockResponse,
+      status: 200,
+      statusText: 'OK',
+      headers: {},
+      config: {} as any
+    };
   }
 }
 

@@ -33,10 +33,6 @@ const Login = () => {
     setIsLoading(true);
     try {
       await login({ username, password });
-      toast({
-        title: "Login successful",
-        description: "Welcome back!",
-      });
       navigate("/dashboard");
     } catch (err: any) {
       console.error("Login failed:", err);

@@ -80,6 +80,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       localStorage.setItem('user_data', JSON.stringify(user));
       setUser(user);
       
+      toast({
+        title: "Login successful",
+        description: `Welcome back, ${user.username}!`,
+      });
     } catch (error: any) {
       console.error('Login failed:', error);
       let errorMsg = 'Login failed. Please try again.';
@@ -89,6 +93,12 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       } else if (error?.message) {
         errorMsg = error.message;
       }
+      
+      toast({
+        title: "Login failed",
+        description: errorMsg,
+        variant: "destructive",
+      });
       
       throw new Error(errorMsg);
     } finally {
