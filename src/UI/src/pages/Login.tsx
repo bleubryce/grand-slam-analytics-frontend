@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Activity, AlertCircle } from "lucide-react";
+import { Activity, AlertCircle, Info } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 
@@ -17,9 +17,17 @@ const Login = () => {
   const [email, setEmail] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
-  const { login } = useAuth();
+  const [showCredentialsHelp, setShowCredentialsHelp] = useState(false);
+  const { login, isAuthenticated } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
+
+  // Redirect if already authenticated
+  useEffect(() => {
+    if (isAuthenticated) {
+      navigate("/dashboard");
+    }
+  }, [isAuthenticated, navigate]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -37,6 +45,15 @@ const Login = () => {
     } catch (err: any) {
       console.error("Login failed:", err);
       setError(err?.message || "Login failed. Please check your credentials and try again.");
+      
+      // Show credentials hint after a failed attempt
+      setShowCredentialsHelp(true);
+      
+      toast({
+        title: "Authentication Failed",
+        description: "We couldn't log you in with those credentials.",
+        variant: "destructive",
+      });
     } finally {
       setIsLoading(false);
     }
@@ -45,8 +62,8 @@ const Login = () => {
   // For development, auto-fill credentials for easy login
   const fillDemoCredentials = () => {
     if (process.env.NODE_ENV === 'development') {
-      setUsername('demo');
-      setPassword('password');
+      setUsername('admin');
+      setPassword('admin123');
     }
   };
 
@@ -78,6 +95,20 @@ const Login = () => {
                     <AlertDescription>{error}</AlertDescription>
                   </Alert>
                 )}
+                
+                {showCredentialsHelp && (
+                  <Alert>
+                    <Info className="h-4 w-4" />
+                    <AlertDescription>
+                      <p className="mb-1">Try these credentials:</p>
+                      <ul className="list-disc pl-5 text-sm">
+                        <li>Username: <strong>admin</strong>, Password: <strong>admin123</strong></li>
+                        <li>Username: <strong>admin</strong>, Password: <strong>baseball_admin_2025</strong></li>
+                      </ul>
+                    </AlertDescription>
+                  </Alert>
+                )}
+                
                 <div className="space-y-2">
                   <Label htmlFor="username">Username</Label>
                   <Input
@@ -111,6 +142,13 @@ const Login = () => {
                 {process.env.NODE_ENV === 'development' && (
                   <div className="text-xs text-muted-foreground">
                     <p>In development mode, any username and password combination will work.</p>
+                    <button 
+                      type="button" 
+                      className="text-baseball-lightBlue hover:underline mt-1"
+                      onClick={() => setShowCredentialsHelp(!showCredentialsHelp)}
+                    >
+                      {showCredentialsHelp ? "Hide" : "Show"} login credentials
+                    </button>
                   </div>
                 )}
               </CardContent>

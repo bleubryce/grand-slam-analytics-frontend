@@ -18,6 +18,17 @@ class AuthService {
       // For development, allow any username/password if mocks are enabled
       if (this.useMockResponse) {
         console.log('Using mock login response in development');
+        
+        // Try to match against known admin accounts for better simulation
+        const isKnownAdmin = 
+          (credentials.username.toLowerCase() === 'admin' && credentials.password === 'admin123') ||
+          (credentials.username.toLowerCase() === 'admin' && credentials.password === 'baseball_admin_2025');
+        
+        if (!isKnownAdmin) {
+          console.warn('Invalid credentials in mock mode. Valid credentials are: username=admin, password=admin123 or password=baseball_admin_2025');
+          // Still allow login in mock/dev mode, but log a warning
+        }
+        
         return Promise.resolve(this.createMockLoginResponse(credentials));
       }
       
@@ -34,6 +45,9 @@ class AuthService {
     
     if (this.useMockResponse) {
       console.log('Using mock logout response in development');
+      localStorage.removeItem(config.auth.tokenKey);
+      localStorage.removeItem('user_data');
+      
       const mockResponse: ApiResponse<null> = {
         status: 'success',
         message: 'Logout successful',
@@ -68,15 +82,18 @@ class AuthService {
       console.log('Using mock getCurrentUser response in development');
       const storedUser = JSON.parse(localStorage.getItem('user_data') || 'null');
       
+      // If no stored user, return a default admin user
+      const user = storedUser || {
+        id: '1',
+        username: 'admin',
+        email: 'admin@example.com',
+        role: 'admin'  // Default role is admin in mock mode
+      };
+      
       const mockResponse: ApiResponse<User> = {
         status: 'success',
         message: 'User retrieved successfully',
-        data: storedUser || {
-          id: '1',
-          username: 'demouser',
-          email: 'demo@example.com',
-          role: 'user'
-        },
+        data: user,
         timestamp: new Date().toISOString()
       };
       
@@ -101,13 +118,15 @@ class AuthService {
 
   // Helper method to create mock login responses for development
   private createMockLoginResponse(credentials: { username: string; password: string }): AxiosResponse<ApiResponse<LoginResponse>> {
+    const isAdmin = credentials.username.toLowerCase() === 'admin';
+    
     const mockUser: User = {
       id: '1',
       username: credentials.username,
       email: `${credentials.username}@example.com`,
-      role: 'user'
+      role: isAdmin ? 'admin' : 'user'  // Assign admin role if username is admin
     };
-
+    
     const mockResponse: ApiResponse<LoginResponse> = {
       status: 'success',
       message: 'Login successful',
@@ -117,6 +136,10 @@ class AuthService {
       },
       timestamp: new Date().toISOString()
     };
+
+    // Store user data in localStorage
+    localStorage.setItem(config.auth.tokenKey, 'mock-jwt-token');
+    localStorage.setItem('user_data', JSON.stringify(mockUser));
 
     return {
       data: mockResponse,
