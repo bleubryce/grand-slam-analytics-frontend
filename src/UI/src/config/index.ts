@@ -18,6 +18,7 @@ export const config = {
     modelVersion: import.meta.env.VITE_MODEL_VERSION || '1.0',
     isAnalyticsEnabled: import.meta.env.VITE_ENABLE_ANALYTICS === 'true',
     isAuthEnabled: import.meta.env.VITE_ENABLE_AUTH === 'true',
+    environment: import.meta.env.MODE || 'development',
   },
   database: {
     host: import.meta.env.VITE_DB_HOST || 'localhost',
@@ -34,4 +35,9 @@ export const config = {
     tokenKey: 'jwt_token',
     expirationTime: '24h',
   },
+  features: {
+    enableRealTimeUpdates: import.meta.env.VITE_ENABLE_REALTIME === 'true' || true,
+    enableExportFeature: import.meta.env.VITE_ENABLE_EXPORT === 'true' || true,
+    enableAdvancedCharts: import.meta.env.VITE_ENABLE_ADVANCED_CHARTS === 'true' || true,
+  }
 };
