@@ -12,6 +12,7 @@ import {
 import { RefreshCcw } from "lucide-react";
 import { useHealthCheck } from "@/hooks/useHealthCheck";
 import { config } from "@/config";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 export const SystemStatus = () => {
   const {
@@ -61,7 +62,16 @@ export const SystemStatus = () => {
         {config.app.isModelEnabled && (
           <>
             <div className="flex items-center justify-between">
-              <span className="text-sm font-medium">ML Model (v{config.app.modelVersion}):</span>
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <span className="text-sm font-medium cursor-help">ML Model (v{config.app.modelVersion}):</span>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Machine Learning model for baseball analytics predictions</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
               <Badge
                 variant={modelHealth ? "default" : "destructive"}
                 className="ml-auto"
