@@ -13,10 +13,18 @@ interface ApiConfig {
   timeout: number;
 }
 
+// Auth configuration
+interface AuthConfig {
+  tokenKey: string;
+  refreshTokenKey: string;
+  expiresInKey: string;
+}
+
 // Full configuration
 export interface Config {
   app: AppConfig;
   api: ApiConfig;
+  auth: AuthConfig;
 }
 
 // Environment variables with fallbacks
@@ -30,5 +38,10 @@ export const config: Config = {
     backendUrl: import.meta.env.VITE_BACKEND_API_URL || 'http://localhost:3001', // Updated to match backend port
     websocketUrl: import.meta.env.VITE_WEBSOCKET_URL || 'ws://localhost:3001',
     timeout: parseInt(import.meta.env.VITE_API_TIMEOUT || '30000')
+  },
+  auth: {
+    tokenKey: 'baseball_analytics_token',
+    refreshTokenKey: 'baseball_analytics_refresh_token',
+    expiresInKey: 'baseball_analytics_expires_in'
   }
 };
