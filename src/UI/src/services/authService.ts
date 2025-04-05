@@ -49,6 +49,7 @@ class AuthService {
         return Promise.resolve(createMockLoginResponse(credentials));
       }
       
+      // In production, call the real API
       return apiClient.post<ApiResponse<LoginResponse>>('/api/auth/login', credentials);
     } catch (error) {
       console.error('Login error:', error);

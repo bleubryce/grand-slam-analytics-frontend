@@ -7,36 +7,40 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Activity } from "lucide-react";
+import { Activity, AlertCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 const Login = () => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [email, setEmail] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState("");
   const { login } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError("");
+    
     if (!username || !password) {
-      toast({
-        title: "Missing information",
-        description: "Please provide both username and password",
-        variant: "destructive",
-      });
+      setError("Please provide both username and password");
       return;
     }
 
     setIsLoading(true);
     try {
       await login({ username, password });
+      toast({
+        title: "Login successful",
+        description: "Welcome back!",
+      });
       navigate("/dashboard");
-    } catch (error) {
-      console.error("Login failed:", error);
-      // Toast is handled in the auth context
+    } catch (err: any) {
+      console.error("Login failed:", err);
+      setError(err?.message || "Login failed. Please check your credentials and try again.");
     } finally {
       setIsLoading(false);
     }
@@ -72,11 +76,17 @@ const Login = () => {
           <TabsContent value="login">
             <form onSubmit={handleLogin}>
               <CardContent className="space-y-4 pt-4">
+                {error && (
+                  <Alert variant="destructive">
+                    <AlertCircle className="h-4 w-4" />
+                    <AlertDescription>{error}</AlertDescription>
+                  </Alert>
+                )}
                 <div className="space-y-2">
                   <Label htmlFor="username">Username</Label>
                   <Input
                     id="username"
-                    placeholder="Enter your username (any value works)"
+                    placeholder="Enter your username"
                     value={username}
                     onChange={(e) => setUsername(e.target.value)}
                     required
@@ -96,7 +106,7 @@ const Login = () => {
                   <Input
                     id="password"
                     type="password"
-                    placeholder="Enter your password (any value works)"
+                    placeholder="Enter your password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     required
@@ -104,7 +114,7 @@ const Login = () => {
                 </div>
                 {process.env.NODE_ENV === 'development' && (
                   <div className="text-xs text-muted-foreground">
-                    <p>In development mode, any username and password will work.</p>
+                    <p>In development mode, any username and password combination will work.</p>
                   </div>
                 )}
               </CardContent>

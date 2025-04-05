@@ -52,6 +52,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       
       if (userData) {
         setUser(userData);
+        localStorage.setItem('user_data', JSON.stringify(userData));
         return true;
       }
       return false;
@@ -67,24 +68,29 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     setLoading(true);
     try {
       const response = await authService.login(credentials);
+      
+      // Check if response contains expected data
+      if (!response?.data?.data?.token) {
+        throw new Error('Invalid response format from server');
+      }
+      
       const { token, user } = response.data.data;
       
       localStorage.setItem(config.auth.tokenKey, token);
       localStorage.setItem('user_data', JSON.stringify(user));
       setUser(user);
       
-      toast({
-        title: 'Welcome back!',
-        description: `You've successfully logged in as ${user.username}`,
-      });
-    } catch (error) {
+    } catch (error: any) {
       console.error('Login failed:', error);
-      toast({
-        title: 'Login failed',
-        description: 'Invalid username or password. Please try again.',
-        variant: 'destructive',
-      });
-      throw error;
+      let errorMsg = 'Login failed. Please try again.';
+      
+      if (error?.response?.data?.error) {
+        errorMsg = error.response.data.error;
+      } else if (error?.message) {
+        errorMsg = error.message;
+      }
+      
+      throw new Error(errorMsg);
     } finally {
       setLoading(false);
     }
