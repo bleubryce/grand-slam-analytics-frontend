@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/card";
 import { RefreshCcw } from "lucide-react";
 import { useHealthCheck } from "@/hooks/useHealthCheck";
+import { config } from "@/config";
 
 export const SystemStatus = () => {
   const {
@@ -18,6 +19,8 @@ export const SystemStatus = () => {
     backendMessage,
     websocketHealth,
     websocketMessage,
+    modelHealth,
+    modelMessage,
     environmentHealth,
     environmentMessage,
     isLoading,
@@ -54,6 +57,21 @@ export const SystemStatus = () => {
           </Badge>
         </div>
         <div className="text-xs text-muted-foreground">{websocketMessage}</div>
+
+        {config.app.isModelEnabled && (
+          <>
+            <div className="flex items-center justify-between">
+              <span className="text-sm font-medium">ML Model (v{config.app.modelVersion}):</span>
+              <Badge
+                variant={modelHealth ? "default" : "destructive"}
+                className="ml-auto"
+              >
+                {modelHealth ? "Available" : "Unavailable"}
+              </Badge>
+            </div>
+            <div className="text-xs text-muted-foreground">{modelMessage}</div>
+          </>
+        )}
 
         <div className="flex items-center justify-between">
           <span className="text-sm font-medium">Environment:</span>

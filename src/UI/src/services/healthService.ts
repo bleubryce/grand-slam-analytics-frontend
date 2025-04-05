@@ -59,6 +59,26 @@ export const healthService = {
   },
 
   /**
+   * Check if the ML model is available and working
+   * @returns {Promise<boolean>} True if the ML model is available, false otherwise
+   */
+  checkModelHealth: async (): Promise<{ healthy: boolean; message: string }> => {
+    try {
+      const response = await healthClient.get('/api/ml/health');
+      return {
+        healthy: response.status === 200,
+        message: `ML model v${config.app.modelVersion} is available`,
+      };
+    } catch (error) {
+      console.error('ML model health check failed:', error);
+      return {
+        healthy: false,
+        message: 'ML model is not responding or unavailable',
+      };
+    }
+  },
+
+  /**
    * Check if the Lovable environment is properly configured
    * @returns {boolean} True if the environment is properly configured, false otherwise
    */
