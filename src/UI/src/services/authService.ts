@@ -13,7 +13,7 @@ class AuthService {
     try {
       console.log('Attempting to login with credentials:', { username: credentials.username, password: '********' });
       
-      // Make the API call to the backend - use the correct endpoint from Security/routes.ts
+      // Make the API call to the backend - use the correct endpoint
       const response = await apiClient.post<ApiResponse<LoginResponse>>('/api/auth/login', credentials);
       
       console.log('Login response received:', response.status, response.data);
@@ -21,7 +21,7 @@ class AuthService {
       // If successful, store the token in localStorage
       if (response.data?.data?.token || response.data?.token) {
         const token = response.data?.data?.token || response.data?.token;
-        localStorage.setItem(config.auth.tokenKey, token);
+        localStorage.setItem('jwt_token', token);
         console.log('Token stored in localStorage:', token.substring(0, 10) + '...');
         
         // Store user data if available
@@ -48,7 +48,7 @@ class AuthService {
       const response = await apiClient.post<ApiResponse<null>>('/api/auth/logout');
       
       // Always clear local storage on logout
-      localStorage.removeItem(config.auth.tokenKey);
+      localStorage.removeItem('jwt_token');
       localStorage.removeItem('user_data');
       console.log('Cleared auth data from localStorage');
       
@@ -57,7 +57,7 @@ class AuthService {
       console.error('Logout error:', error);
       
       // Even if API call fails, clear local storage
-      localStorage.removeItem(config.auth.tokenKey);
+      localStorage.removeItem('jwt_token');
       localStorage.removeItem('user_data');
       
       throw error;
@@ -66,7 +66,7 @@ class AuthService {
 
   async getCurrentUser(): Promise<AxiosResponse<ApiResponse<User>>> {
     console.log('Getting current user data...');
-    const token = localStorage.getItem(config.auth.tokenKey);
+    const token = localStorage.getItem('jwt_token');
     
     if (!token) {
       console.log('No token found, user is not authenticated');

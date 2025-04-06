@@ -31,7 +31,7 @@ const LoginForm = () => {
     try {
       console.log("Attempting login with:", { username, password: "*".repeat(password.length) });
       
-      // Add more verbose logging
+      // Add verbose debugging to track the login flow
       console.log("Before login call");
       await login({ username, password });
       console.log("After login call - Login successful");
