@@ -1,7 +1,7 @@
 
 import React, { createContext, useState, useContext, useEffect, ReactNode } from 'react';
 import { authService } from '../services/authService';
-import { User, ApiResponse } from '../services/types';
+import { User } from '../services/types';
 import { config } from '../config';
 import { useToast } from '@/hooks/use-toast';
 import { useNavigate } from 'react-router-dom';
@@ -45,18 +45,22 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const checkAuth = async (): Promise<boolean> => {
     const token = localStorage.getItem(config.auth.tokenKey);
     if (!token) {
+      console.log('No token found in localStorage');
       return false;
     }
 
     try {
+      console.log('Validating existing token');
       const response = await authService.getCurrentUser();
       const userData = response.data.data;
       
       if (userData) {
+        console.log('Token validation successful, user:', userData);
         setUser(userData);
         localStorage.setItem('user_data', JSON.stringify(userData));
         return true;
       }
+      console.log('Token validation failed - no user data returned');
       return false;
     } catch (error) {
       console.error('Token validation failed:', error);
@@ -69,6 +73,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const login = async (credentials: { username: string; password: string }) => {
     setLoading(true);
     try {
+      console.log('Auth service login attempt with username:', credentials.username);
       const response = await authService.login(credentials);
       
       console.log('Auth service login response:', response);
@@ -80,6 +85,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       
       const { token, user } = response.data.data;
       
+      console.log('Login successful, saving token and user data');
       localStorage.setItem(config.auth.tokenKey, token);
       localStorage.setItem('user_data', JSON.stringify(user));
       setUser(user);
@@ -116,6 +122,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const logout = async () => {
     setLoading(true);
     try {
+      console.log('Logging out user');
       await authService.logout();
     } catch (error) {
       console.error('Logout API call failed:', error);

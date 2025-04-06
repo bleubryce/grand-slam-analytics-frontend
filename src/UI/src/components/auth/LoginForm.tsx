@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { AlertCircle, Info } from "lucide-react";
+import { AlertCircle, Info, Eye, EyeOff } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { CardContent, CardFooter } from "@/components/ui/card";
 
@@ -14,6 +14,7 @@ const LoginForm = () => {
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const { login } = useAuth();
   const { toast } = useToast();
 
@@ -28,9 +29,13 @@ const LoginForm = () => {
 
     setIsLoading(true);
     try {
-      console.log("Attempting login with:", { username, password });
+      console.log("Attempting login with:", { username, password: "*".repeat(password.length) });
       await login({ username, password });
       console.log("Login successful");
+      toast({
+        title: "Login successful",
+        description: "Redirecting to dashboard...",
+      });
       // Success is handled by the AuthContext through redirection
     } catch (err: any) {
       console.error("Login failed:", err);
@@ -59,6 +64,10 @@ const LoginForm = () => {
   const fillDemoCredentials = () => {
     setUsername('admin');
     setPassword('password');
+  };
+
+  const togglePasswordVisibility = () => {
+    setShowPassword(!showPassword);
   };
 
   return (
@@ -99,14 +108,25 @@ const LoginForm = () => {
               Forgot password?
             </a>
           </div>
-          <Input
-            id="password"
-            type="password"
-            placeholder="Enter your password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-          />
+          <div className="relative">
+            <Input
+              id="password"
+              type={showPassword ? "text" : "password"}
+              placeholder="Enter your password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+              className="pr-10"
+            />
+            <button 
+              type="button"
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500"
+              onClick={togglePasswordVisibility}
+              tabIndex={-1}
+            >
+              {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+            </button>
+          </div>
         </div>
         <div className="text-center">
           <button 
