@@ -5,22 +5,28 @@ import { config } from '@/config';
 import { ApiResponse, LoginResponse, User } from './types';
 
 class AuthService {
-  private useMockResponse: boolean;
-
   constructor() {
-    // Always use real responses, set to false to disable mocks
-    this.useMockResponse = false;
-    console.log('AuthService initialized - Using real API responses');
+    console.log('AuthService initialized - Using real API authentication');
   }
 
   async login(credentials: { username: string; password: string }): Promise<AxiosResponse<ApiResponse<LoginResponse>>> {
     try {
-      console.log('Logging in with credentials:', { username: credentials.username, password: '********' });
+      console.log('Attempting to login with credentials:', { username: credentials.username, password: '********' });
       
-      // Call the real API
-      return apiClient.post<ApiResponse<LoginResponse>>('/api/auth/login', credentials);
+      // Make the API call to the backend
+      const response = await apiClient.post<ApiResponse<LoginResponse>>('/api/auth/login', credentials);
+      
+      console.log('Login response received:', response.status);
+      
+      // If successful, store the token in localStorage
+      if (response.data.data?.token) {
+        localStorage.setItem(config.auth.tokenKey, response.data.data.token);
+        console.log('Token stored in localStorage');
+      }
+      
+      return response;
     } catch (error) {
-      console.error('Login error:', error);
+      console.error('Login request failed:', error);
       throw error;
     }
   }
@@ -43,6 +49,7 @@ class AuthService {
       // Always clear local storage on logout
       localStorage.removeItem(config.auth.tokenKey);
       localStorage.removeItem('user_data');
+      console.log('Cleared auth data from localStorage');
       
       return response;
     } catch (error) {
@@ -57,7 +64,13 @@ class AuthService {
   }
 
   async getCurrentUser(): Promise<AxiosResponse<ApiResponse<User>>> {
+    console.log('Getting current user data...');
     const token = localStorage.getItem(config.auth.tokenKey);
+    
+    if (!token) {
+      console.log('No token found, user is not authenticated');
+      return Promise.reject('No authentication token found');
+    }
     
     return apiClient.get<ApiResponse<User>>(
       '/api/auth/me',

@@ -29,7 +29,13 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   useEffect(() => {
     // On initial load, check if user is already authenticated
+    const tokenKey = config.auth.tokenKey;
+    const storedToken = localStorage.getItem(tokenKey);
     const storedUser = localStorage.getItem('user_data');
+    
+    console.log('Auth init - Token exists:', !!storedToken);
+    console.log('Auth init - User data exists:', !!storedUser);
+    
     if (storedUser) {
       try {
         setUser(JSON.parse(storedUser));
@@ -76,14 +82,16 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       console.log('Auth service login attempt with username:', credentials.username);
       const response = await authService.login(credentials);
       
-      console.log('Auth service login response:', response);
+      console.log('Auth service login response:', response.status);
       
       // Check if response contains expected data
-      if (!response?.data?.data?.token) {
+      const responseData = response.data.data;
+      if (!responseData?.token || !responseData?.user) {
+        console.error('Invalid response format:', response.data);
         throw new Error('Invalid response format from server');
       }
       
-      const { token, user } = response.data.data;
+      const { token, user } = responseData;
       
       console.log('Login successful, saving token and user data');
       localStorage.setItem(config.auth.tokenKey, token);
@@ -101,8 +109,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       console.error('Login failed:', error);
       let errorMsg = 'Login failed. Please try again.';
       
-      if (error?.response?.data?.error) {
-        errorMsg = error.response.data.error;
+      if (error?.response?.data?.message) {
+        errorMsg = error.response.data.message;
       } else if (error?.message) {
         errorMsg = error.message;
       }
@@ -124,19 +132,23 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     try {
       console.log('Logging out user');
       await authService.logout();
-    } catch (error) {
-      console.error('Logout API call failed:', error);
-      // Continue with logout process even if API call fails
-    } finally {
-      localStorage.removeItem(config.auth.tokenKey);
-      localStorage.removeItem('user_data');
-      setUser(null);
-      setLoading(false);
       toast({
         title: 'Logged out',
         description: 'You have been successfully logged out',
       });
-      // Redirect to login page
+    } catch (error) {
+      console.error('Logout API call failed:', error);
+      toast({
+        title: 'Logout issue',
+        description: 'There was an issue with the logout process, but you have been logged out locally',
+        variant: "warning",
+      });
+    } finally {
+      // Always clear local state regardless of API result
+      localStorage.removeItem(config.auth.tokenKey);
+      localStorage.removeItem('user_data');
+      setUser(null);
+      setLoading(false);
       navigate('/login');
     }
   };

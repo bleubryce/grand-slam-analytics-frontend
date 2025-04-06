@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { apiClient } from '@/services/apiClient';
 import { config } from '@/config';
@@ -19,17 +20,29 @@ export const useHealthCheck = () => {
 
   const checkBackend = async () => {
     try {
-      const response = await apiClient.get('/api/health', { timeout: 5000 });
-      console.log('Backend API health check:', response.data);
+      console.log('Checking backend health at:', config.api.backendUrl);
+      const response = await apiClient.get('/api/health', { timeout: 8000 });
+      console.log('Backend API health check result:', response.data);
       
-      setBackendHealth(true);
-      setBackendMessage(`Connected to backend API. Version: ${response.data.version || 'unknown'}`);
-      return true;
-    } catch (error) {
+      if (response.data && response.status === 200) {
+        setBackendHealth(true);
+        setBackendMessage(`Connected to backend API. Version: ${response.data.version || response.data.data?.version || 'unknown'}`);
+        return true;
+      } else {
+        throw new Error('Backend returned unexpected response');
+      }
+    } catch (error: any) {
       console.error('Backend health check failed:', error);
       
+      let errorMessage = 'Could not connect to backend API. Check server status.';
+      if (error?.response?.status) {
+        errorMessage += ` Status: ${error.response.status}`;
+      } else if (error?.message) {
+        errorMessage += ` Error: ${error.message}`;
+      }
+      
       setBackendHealth(false);
-      setBackendMessage('Could not connect to backend API. Check server status.');
+      setBackendMessage(errorMessage);
       return false;
     }
   };
@@ -74,6 +87,7 @@ export const useHealthCheck = () => {
 
   const runChecks = async () => {
     setIsLoading(true);
+    console.log('Running health checks...');
     
     await checkBackend();
     checkWebsocket();

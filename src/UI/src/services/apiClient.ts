@@ -19,10 +19,12 @@ apiClient.interceptors.request.use(
     const token = localStorage.getItem('jwt_token');
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
+      console.log('Added auth token to request:', config.url);
     }
     return config;
   },
   (error) => {
+    console.error('Request interceptor error:', error);
     return Promise.reject(error);
   }
 );
@@ -34,6 +36,8 @@ apiClient.interceptors.response.use(
     return response;
   },
   (error) => {
+    console.error('API response error:', error);
+    
     // Handle 401 Unauthorized responses by clearing auth state
     if (error.response && error.response.status === 401) {
       console.log('401 Unauthorized response, clearing auth state');
@@ -41,7 +45,6 @@ apiClient.interceptors.response.use(
       localStorage.removeItem('user_data');
       // Redirect to login page
       window.location.href = '/login';
-      return Promise.reject(error);
     }
     
     // Use the error handler utility for other errors
