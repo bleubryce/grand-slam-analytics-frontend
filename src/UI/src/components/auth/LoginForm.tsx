@@ -8,6 +8,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertCircle, Info, Eye, EyeOff } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { CardContent, CardFooter } from "@/components/ui/card";
+import { config } from "@/config";
 
 const LoginForm = () => {
   const [username, setUsername] = useState("");

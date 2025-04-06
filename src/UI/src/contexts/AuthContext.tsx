@@ -26,7 +26,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [loading, setLoading] = useState<boolean>(true);
   const { toast } = useToast();
   const navigate = useNavigate();
-  const tokenKey = 'jwt_token'; // Using consistent token key
+  const tokenKey = config.auth.tokenKey;
 
   useEffect(() => {
     // On initial load, check if user is already authenticated

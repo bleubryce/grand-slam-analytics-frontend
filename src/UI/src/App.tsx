@@ -8,6 +8,13 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import Index from "./pages/Index";
 import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
+import Team from "./pages/Team";
+import Stats from "./pages/Stats";
+import Performance from "./pages/Performance";
+import Schedule from "./pages/Schedule";
+import Reports from "./pages/Reports";
+import Database from "./pages/Database";
+import Settings from "./pages/Settings";
 import History from "./pages/History";
 import Players from "./pages/Players";
 import NotFound from "./pages/NotFound";
@@ -49,6 +56,62 @@ const AppRoutes = () => {
         element={
           <ProtectedRoute>
             <Dashboard />
+          </ProtectedRoute>
+        } 
+      />
+      <Route 
+        path="/team" 
+        element={
+          <ProtectedRoute>
+            <Team />
+          </ProtectedRoute>
+        } 
+      />
+      <Route 
+        path="/stats" 
+        element={
+          <ProtectedRoute>
+            <Stats />
+          </ProtectedRoute>
+        } 
+      />
+      <Route 
+        path="/performance" 
+        element={
+          <ProtectedRoute>
+            <Performance />
+          </ProtectedRoute>
+        } 
+      />
+      <Route 
+        path="/schedule" 
+        element={
+          <ProtectedRoute>
+            <Schedule />
+          </ProtectedRoute>
+        } 
+      />
+      <Route 
+        path="/reports" 
+        element={
+          <ProtectedRoute>
+            <Reports />
+          </ProtectedRoute>
+        } 
+      />
+      <Route 
+        path="/database" 
+        element={
+          <ProtectedRoute>
+            <Database />
+          </ProtectedRoute>
+        } 
+      />
+      <Route 
+        path="/settings" 
+        element={
+          <ProtectedRoute>
+            <Settings />
           </ProtectedRoute>
         } 
       />

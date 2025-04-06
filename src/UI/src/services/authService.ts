@@ -21,7 +21,7 @@ class AuthService {
       // If successful, store the token in localStorage
       if (response.data?.data?.token || response.data?.token) {
         const token = response.data?.data?.token || response.data?.token;
-        localStorage.setItem('jwt_token', token);
+        localStorage.setItem(config.auth.tokenKey, token);
         console.log('Token stored in localStorage:', token.substring(0, 10) + '...');
         
         // Store user data if available
@@ -48,7 +48,7 @@ class AuthService {
       const response = await apiClient.post<ApiResponse<null>>('/api/auth/logout');
       
       // Always clear local storage on logout
-      localStorage.removeItem('jwt_token');
+      localStorage.removeItem(config.auth.tokenKey);
       localStorage.removeItem('user_data');
       console.log('Cleared auth data from localStorage');
       
@@ -57,7 +57,7 @@ class AuthService {
       console.error('Logout error:', error);
       
       // Even if API call fails, clear local storage
-      localStorage.removeItem('jwt_token');
+      localStorage.removeItem(config.auth.tokenKey);
       localStorage.removeItem('user_data');
       
       throw error;
@@ -66,7 +66,7 @@ class AuthService {
 
   async getCurrentUser(): Promise<AxiosResponse<ApiResponse<User>>> {
     console.log('Getting current user data...');
-    const token = localStorage.getItem('jwt_token');
+    const token = localStorage.getItem(config.auth.tokenKey);
     
     if (!token) {
       console.log('No token found, user is not authenticated');

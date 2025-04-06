@@ -37,6 +37,7 @@ export const config: Config = {
   },
   api: {
     backendUrl: import.meta.env.VITE_BACKEND_API_URL || '', // Empty string to use relative URLs with the proxy
+    modelUrl: import.meta.env.VITE_MODEL_URL,
     websocketUrl: import.meta.env.VITE_WEBSOCKET_URL || 'ws://localhost:3001',
     timeout: parseInt(import.meta.env.VITE_API_TIMEOUT || '30000')
   },
