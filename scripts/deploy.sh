@@ -1,3 +1,4 @@
+
 #!/bin/bash
 
 # Main deployment script for Baseball Analytics System
@@ -48,16 +49,38 @@ main() {
     log "Stopping services..."
     ./scripts/stop-services.sh "$DEPLOY_ENV" || exit 1
 
-    # Deploy application
-    log "Deploying application..."
+    # Deploy application and model
+    log "Deploying application and model..."
     case "$DEPLOY_ENV" in
         production)
-            docker-compose -f docker-compose.prod.yml pull
-            docker-compose -f docker-compose.prod.yml up -d
+            # Build and tag images
+            log "Building and tagging Docker images..."
+            docker build -t baseball-analytics:$TIMESTAMP .
+            docker tag baseball-analytics:$TIMESTAMP baseball-analytics:latest
+            
+            # Build model image
+            log "Building model Docker image..."
+            docker build -t baseball-analytics-model:$TIMESTAMP ./model
+            docker tag baseball-analytics-model:$TIMESTAMP baseball-analytics-model:latest
+            
+            # Deploy with docker-compose
+            log "Deploying with docker-compose..."
+            TAG=$TIMESTAMP docker-compose -f docker-compose.prod.yml up -d
             ;;
         staging)
-            docker-compose -f docker-compose.staging.yml pull
-            docker-compose -f docker-compose.staging.yml up -d
+            # Build and tag images
+            log "Building and tagging Docker images for staging..."
+            docker build -t baseball-analytics:staging-$TIMESTAMP .
+            docker tag baseball-analytics:staging-$TIMESTAMP baseball-analytics:staging
+            
+            # Build model image
+            log "Building model Docker image for staging..."
+            docker build -t baseball-analytics-model:staging-$TIMESTAMP ./model
+            docker tag baseball-analytics-model:staging-$TIMESTAMP baseball-analytics-model:staging
+            
+            # Deploy with docker-compose
+            log "Deploying staging environment..."
+            TAG=staging-$TIMESTAMP docker-compose -f docker-compose.staging.yml up -d
             ;;
         *)
             log "Invalid environment: $DEPLOY_ENV"
@@ -69,13 +92,17 @@ main() {
     log "Running database migrations..."
     ./scripts/run-migrations.sh "$DEPLOY_ENV" || exit 1
 
+    # Download model weights if not present
+    log "Checking model weights..."
+    ./scripts/download-model-weights.sh "$DEPLOY_ENV" || log "Warning: Model weights may be outdated"
+
     # Verify deployment
     log "Verifying deployment..."
     ./scripts/verify-deployment.sh "$DEPLOY_ENV" || exit 1
 
     # Cache warmup
     log "Warming up cache..."
-    ./scripts/cache-warmup.sh "$DEPLOY_ENV" || exit 1
+    ./scripts/cache-warmup.sh "$DEPLOY_ENV" || log "Warning: Cache warmup incomplete"
 
     # Health check
     log "Running health checks..."
@@ -83,7 +110,7 @@ main() {
 
     # Cleanup
     log "Performing cleanup..."
-    ./scripts/cleanup.sh "$DEPLOY_ENV" || exit 1
+    ./scripts/cleanup.sh "$DEPLOY_ENV" || log "Warning: Cleanup incomplete"
 
     log "Deployment completed successfully"
     ./scripts/notify-team.sh "Deployment to $DEPLOY_ENV completed successfully"
@@ -114,6 +141,8 @@ export AWS_SECRET_ACCESS_KEY=your_aws_secret_key
 export BACKUP_S3_BUCKET=baseball-analytics-backups-prod
 export LOG_LEVEL=info
 export LOG_FORMAT=json
+export MODEL_ENABLED=true
+export MODEL_VERSION=1.0.0
 
 # Build and start containers
 echo "Starting services..."

@@ -13,6 +13,16 @@ export const apiClient = axios.create({
   }
 });
 
+// Create a separate instance for ML model API requests
+export const modelApi = axios.create({
+  baseURL: config.api.backendUrl,
+  timeout: config.api.timeout * 2, // Double timeout for model requests
+  headers: {
+    'Content-Type': 'application/json',
+    'Accept': 'application/json'
+  }
+});
+
 // Add request interceptor to include auth token in requests
 apiClient.interceptors.request.use(
   (config) => {
@@ -25,6 +35,22 @@ apiClient.interceptors.request.use(
   },
   (error) => {
     console.error('Request interceptor error:', error);
+    return Promise.reject(error);
+  }
+);
+
+// Same interceptor for model API
+modelApi.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem(config.auth?.tokenKey || 'jwt_token');
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+      console.log('Added auth token to model request:', config.url);
+    }
+    return config;
+  },
+  (error) => {
+    console.error('Model API request interceptor error:', error);
     return Promise.reject(error);
   }
 );
@@ -53,6 +79,48 @@ apiClient.interceptors.response.use(
     return handleApiError(error);
   }
 );
+
+// Same error handling for model API
+modelApi.interceptors.response.use(
+  (response) => {
+    console.log(`Model API response from ${response.config.url}:`, response.status);
+    return response;
+  },
+  (error) => {
+    console.error('Model API response error:', error);
+    
+    // Handle 401 Unauthorized responses by clearing auth state
+    if (error.response && error.response.status === 401) {
+      console.log('401 Unauthorized response, clearing auth state');
+      localStorage.removeItem(config.auth?.tokenKey || 'jwt_token');
+      localStorage.removeItem('user_data');
+      // Redirect to login page if not already there
+      if (!window.location.pathname.includes('/login')) {
+        window.location.href = '/login';
+      }
+    }
+    
+    // Use the error handler utility for other errors
+    return handleApiError(error);
+  }
+);
+
+// Model API methods
+modelApi.getModelInfo = async (modelType) => {
+  return await modelApi.get(`/api/models/${modelType}/info`);
+};
+
+modelApi.getModelMetrics = async (modelType) => {
+  return await modelApi.get(`/api/models/${modelType}/metrics`);
+};
+
+modelApi.predict = async (modelType, inputData) => {
+  return await modelApi.post(`/api/models/${modelType}/predict`, inputData);
+};
+
+modelApi.train = async (modelType, trainingData) => {
+  return await modelApi.post(`/api/models/${modelType}/train`, trainingData);
+};
 
 // Export the API client
 export default apiClient;

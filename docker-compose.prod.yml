@@ -1,3 +1,4 @@
+
 version: '3.8'
 
 services:
@@ -31,6 +32,31 @@ services:
       retries: 3
       start_period: 40s
 
+  model:
+    build:
+      context: ./model
+      dockerfile: Dockerfile
+    image: baseball-analytics-model:${TAG:-latest}
+    restart: unless-stopped
+    env_file: ./config/model.env
+    volumes:
+      - model-data:/data
+    networks:
+      - app-network
+    deploy:
+      resources:
+        limits:
+          cpus: '4'
+          memory: 8G
+      restart_policy:
+        condition: on-failure
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000/health"]
+      interval: 30s
+      timeout: 15s
+      retries: 3
+      start_period: 60s
+
   nginx:
     image: nginx:stable-alpine
     restart: unless-stopped
@@ -44,6 +70,7 @@ services:
       - nginx-logs:/var/log/nginx
     depends_on:
       - app
+      - model
     networks:
       - app-network
     deploy:
@@ -171,6 +198,8 @@ volumes:
     driver: local
   backups:
     driver: local
+  model-data:
+    driver: local
 
 networks:
   app-network:
@@ -178,4 +207,4 @@ networks:
     attachable: true
   monitoring-network:
     driver: overlay
-    attachable: true 
+    attachable: true
