@@ -11,10 +11,13 @@ class AuthService {
     // Use mock responses in development if the backend is not available
     // Set to true to use mock responses in development
     this.useMockResponse = config.app.environment === 'development';
+    console.log('Using mock responses:', this.useMockResponse);
   }
 
   async login(credentials: { username: string; password: string }): Promise<AxiosResponse<ApiResponse<LoginResponse>>> {
     try {
+      console.log('Logging in with credentials:', credentials);
+      
       // For development, allow only admin/password if mocks are enabled
       if (this.useMockResponse) {
         console.log('Using mock login response in development');
@@ -162,6 +165,8 @@ class AuthService {
       },
       timestamp: new Date().toISOString()
     };
+
+    console.log('Generated mock login response:', mockResponse);
 
     // Store user data in localStorage
     localStorage.setItem(config.auth.tokenKey, 'mock-jwt-token');

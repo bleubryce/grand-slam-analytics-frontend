@@ -28,7 +28,9 @@ const LoginForm = () => {
 
     setIsLoading(true);
     try {
+      console.log("Attempting login with:", { username, password });
       await login({ username, password });
+      console.log("Login successful");
       // Success is handled by the AuthContext through redirection
     } catch (err: any) {
       console.error("Login failed:", err);

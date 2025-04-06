@@ -4,6 +4,7 @@ import { authService } from '../services/authService';
 import { User, ApiResponse } from '../services/types';
 import { config } from '../config';
 import { useToast } from '@/hooks/use-toast';
+import { useNavigate } from 'react-router-dom';
 
 interface AuthContextType {
   user: User | null;
@@ -24,6 +25,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const { toast } = useToast();
+  const navigate = useNavigate();
 
   useEffect(() => {
     // On initial load, check if user is already authenticated
@@ -69,6 +71,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     try {
       const response = await authService.login(credentials);
       
+      console.log('Auth service login response:', response);
+      
       // Check if response contains expected data
       if (!response?.data?.data?.token) {
         throw new Error('Invalid response format from server');
@@ -84,6 +88,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         title: "Login successful",
         description: `Welcome back, ${user.username}!`,
       });
+      
+      // Redirect to dashboard
+      navigate('/dashboard');
     } catch (error: any) {
       console.error('Login failed:', error);
       let errorMsg = 'Login failed. Please try again.';
@@ -122,6 +129,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         title: 'Logged out',
         description: 'You have been successfully logged out',
       });
+      // Redirect to login page
+      navigate('/login');
     }
   };
 
