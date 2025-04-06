@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { apiClient } from '@/services/apiClient';
 import { config } from '@/config';
@@ -29,13 +28,6 @@ export const useHealthCheck = () => {
     } catch (error) {
       console.error('Backend health check failed:', error);
       
-      // In development, we'll pretend the backend is healthy with mock data
-      if (config.app.environment === 'development') {
-        setBackendHealth(true);
-        setBackendMessage('Using mock backend data (development mode)');
-        return true;
-      }
-      
       setBackendHealth(false);
       setBackendMessage('Could not connect to backend API. Check server status.');
       return false;
@@ -44,15 +36,11 @@ export const useHealthCheck = () => {
 
   const checkWebsocket = () => {
     // In a real app, we'd check actual websocket connection
-    // For now, we'll just use a mock check
-    const mockConnected = config.app.environment === 'development';
+    // This is a placeholder for real websocket connection check
+    setWebsocketHealth(false);
+    setWebsocketMessage('Websocket connection not implemented yet');
     
-    setWebsocketHealth(mockConnected);
-    setWebsocketMessage(mockConnected 
-      ? 'Websocket available for real-time updates (mock)' 
-      : 'Websocket connection failed');
-    
-    return mockConnected;
+    return false;
   };
 
   const checkModel = () => {
