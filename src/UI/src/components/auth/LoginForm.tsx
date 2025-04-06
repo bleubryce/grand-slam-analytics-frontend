@@ -32,11 +32,6 @@ const LoginForm = () => {
       console.log("Attempting login with:", { username, password: "*".repeat(password.length) });
       await login({ username, password });
       console.log("Login successful");
-      toast({
-        title: "Login successful",
-        description: "Redirecting to dashboard...",
-      });
-      // Success is handled by the AuthContext through redirection
     } catch (err: any) {
       console.error("Login failed:", err);
       
@@ -49,12 +44,6 @@ const LoginForm = () => {
       }
       
       setError(errorMsg);
-      
-      toast({
-        title: "Authentication Failed",
-        description: "Invalid username or password. Please try again.",
-        variant: "destructive",
-      });
     } finally {
       setIsLoading(false);
     }

@@ -29,23 +29,28 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   useEffect(() => {
     // On initial load, check if user is already authenticated
-    const tokenKey = config.auth.tokenKey;
-    const storedToken = localStorage.getItem(tokenKey);
-    const storedUser = localStorage.getItem('user_data');
-    
-    console.log('Auth init - Token exists:', !!storedToken);
-    console.log('Auth init - User data exists:', !!storedUser);
-    
-    if (storedUser) {
-      try {
-        setUser(JSON.parse(storedUser));
-      } catch (e) {
-        console.error('Failed to parse stored user data:', e);
-        localStorage.removeItem('user_data');
+    const initAuth = async () => {
+      const tokenKey = config.auth.tokenKey;
+      const storedToken = localStorage.getItem(tokenKey);
+      const storedUser = localStorage.getItem('user_data');
+      
+      console.log('Auth init - Token exists:', !!storedToken);
+      console.log('Auth init - User data exists:', !!storedUser);
+      
+      if (storedUser) {
+        try {
+          setUser(JSON.parse(storedUser));
+        } catch (e) {
+          console.error('Failed to parse stored user data:', e);
+          localStorage.removeItem('user_data');
+        }
       }
-    }
+      
+      await checkAuth();
+      setLoading(false);
+    };
     
-    checkAuth().finally(() => setLoading(false));
+    initAuth();
   }, []);
 
   const checkAuth = async (): Promise<boolean> => {
@@ -58,7 +63,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     try {
       console.log('Validating existing token');
       const response = await authService.getCurrentUser();
-      const userData = response.data.data;
+      const userData = response.data?.data || response.data?.user;
       
       if (userData) {
         console.log('Token validation successful, user:', userData);
@@ -70,8 +75,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       return false;
     } catch (error) {
       console.error('Token validation failed:', error);
+      // Clear invalid authentication data
       localStorage.removeItem(config.auth.tokenKey);
       localStorage.removeItem('user_data');
+      setUser(null);
       return false;
     }
   };
@@ -85,22 +92,17 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       console.log('Auth service login response:', response.status);
       
       // Check if response contains expected data
-      const responseData = response.data.data;
-      if (!responseData?.token || !responseData?.user) {
+      const userData = response.data?.data?.user || response.data?.user;
+      if (!userData) {
         console.error('Invalid response format:', response.data);
         throw new Error('Invalid response format from server');
       }
       
-      const { token, user } = responseData;
-      
-      console.log('Login successful, saving token and user data');
-      localStorage.setItem(config.auth.tokenKey, token);
-      localStorage.setItem('user_data', JSON.stringify(user));
-      setUser(user);
+      setUser(userData);
       
       toast({
         title: "Login successful",
-        description: `Welcome back, ${user.username}!`,
+        description: `Welcome back, ${userData.username || userData.email || 'user'}!`,
       });
       
       // Redirect to dashboard

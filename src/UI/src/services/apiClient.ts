@@ -16,7 +16,7 @@ export const apiClient = axios.create({
 // Add request interceptor to include auth token in requests
 apiClient.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem('jwt_token');
+    const token = localStorage.getItem(config.auth?.tokenKey || 'jwt_token');
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
       console.log('Added auth token to request:', config.url);
@@ -41,10 +41,12 @@ apiClient.interceptors.response.use(
     // Handle 401 Unauthorized responses by clearing auth state
     if (error.response && error.response.status === 401) {
       console.log('401 Unauthorized response, clearing auth state');
-      localStorage.removeItem('jwt_token');
+      localStorage.removeItem(config.auth?.tokenKey || 'jwt_token');
       localStorage.removeItem('user_data');
-      // Redirect to login page
-      window.location.href = '/login';
+      // Redirect to login page if not already there
+      if (!window.location.pathname.includes('/login')) {
+        window.location.href = '/login';
+      }
     }
     
     // Use the error handler utility for other errors

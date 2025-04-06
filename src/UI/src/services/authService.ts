@@ -13,15 +13,25 @@ class AuthService {
     try {
       console.log('Attempting to login with credentials:', { username: credentials.username, password: '********' });
       
-      // Make the API call to the backend
+      // Make the API call to the backend - use the correct endpoint from Security/routes.ts
       const response = await apiClient.post<ApiResponse<LoginResponse>>('/api/auth/login', credentials);
       
-      console.log('Login response received:', response.status);
+      console.log('Login response received:', response.status, response.data);
       
       // If successful, store the token in localStorage
-      if (response.data.data?.token) {
-        localStorage.setItem(config.auth.tokenKey, response.data.data.token);
-        console.log('Token stored in localStorage');
+      if (response.data?.data?.token || response.data?.token) {
+        const token = response.data?.data?.token || response.data?.token;
+        localStorage.setItem(config.auth.tokenKey, token);
+        console.log('Token stored in localStorage:', token.substring(0, 10) + '...');
+        
+        // Store user data if available
+        const userData = response.data?.data?.user || response.data?.user;
+        if (userData) {
+          localStorage.setItem('user_data', JSON.stringify(userData));
+          console.log('User data stored in localStorage');
+        }
+      } else {
+        console.error('No token received in response:', response.data);
       }
       
       return response;
@@ -36,15 +46,7 @@ class AuthService {
     const token = localStorage.getItem(config.auth.tokenKey);
     
     try {
-      const response = await apiClient.post<ApiResponse<null>>(
-        '/api/auth/logout',
-        {},
-        {
-          headers: {
-            Authorization: `Bearer ${token}`
-          }
-        }
-      );
+      const response = await apiClient.post<ApiResponse<null>>('/api/auth/logout');
       
       // Always clear local storage on logout
       localStorage.removeItem(config.auth.tokenKey);
@@ -72,14 +74,7 @@ class AuthService {
       return Promise.reject('No authentication token found');
     }
     
-    return apiClient.get<ApiResponse<User>>(
-      '/api/auth/me',
-      {
-        headers: {
-          Authorization: `Bearer ${token}`
-        }
-      }
-    );
+    return apiClient.get<ApiResponse<User>>('/api/auth/me');
   }
 }
 
