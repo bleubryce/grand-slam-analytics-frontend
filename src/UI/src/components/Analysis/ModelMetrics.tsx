@@ -26,7 +26,8 @@ export const ModelMetrics: React.FC<ModelMetricsProps> = ({ modelMetrics }) => {
       'r2': 'Coefficient of determination (goodness of fit)',
       'mse': 'Mean Squared Error - average of squared differences',
       'rmse': 'Root Mean Squared Error - square root of MSE',
-      'mae': 'Mean Absolute Error - average of absolute differences'
+      'mae': 'Mean Absolute Error - average of absolute differences',
+      'confidence': 'Model confidence in its predictions'
     };
     
     return descriptions[key.toLowerCase()] || 'Model performance metric';
@@ -44,6 +45,7 @@ export const ModelMetrics: React.FC<ModelMetricsProps> = ({ modelMetrics }) => {
     
     // For error metrics (lower is better)
     if (['mse', 'rmse', 'mae'].includes(lowerKey)) {
+      // Inverse scale for error metrics (lower is better)
       if (value <= 0.05) return "bg-green-500";
       if (value <= 0.15) return "bg-amber-500";
       return "bg-red-500";
@@ -53,7 +55,7 @@ export const ModelMetrics: React.FC<ModelMetricsProps> = ({ modelMetrics }) => {
   };
 
   // Get badge variant based on metric value
-  const getBadgeVariant = (key: string, value: number) => {
+  const getBadgeVariant = (key: string, value: number): "success" | "warning" | "destructive" | "default" => {
     const lowerKey = key.toLowerCase();
     
     if (isPercentageMetric(key)) {
@@ -62,7 +64,34 @@ export const ModelMetrics: React.FC<ModelMetricsProps> = ({ modelMetrics }) => {
       return "destructive";
     }
     
+    // For error metrics (lower is better)
+    if (['mse', 'rmse', 'mae'].includes(lowerKey)) {
+      if (value <= 0.05) return "success";
+      if (value <= 0.15) return "warning";
+      return "destructive";
+    }
+    
     return "default";
+  };
+
+  // Get appropriate badge label based on metric type and value
+  const getBadgeLabel = (key: string, value: number): string => {
+    const lowerKey = key.toLowerCase();
+    
+    if (isPercentageMetric(key)) {
+      if (value >= 0.9) return "Excellent";
+      if (value >= 0.7) return "Good";
+      return "Poor";
+    }
+    
+    // For error metrics
+    if (['mse', 'rmse', 'mae'].includes(lowerKey)) {
+      if (value <= 0.05) return "Low Error";
+      if (value <= 0.15) return "Moderate Error";
+      return "High Error";
+    }
+    
+    return "Metric";
   };
 
   if (!modelMetrics) {
@@ -115,8 +144,8 @@ export const ModelMetrics: React.FC<ModelMetricsProps> = ({ modelMetrics }) => {
               
               <div className="flex items-center">
                 {typeof value === 'number' && (
-                  <Badge variant={getBadgeVariant(key, value) as any} className="mr-2">
-                    {isPercentageMetric(key) ? 'Good' : 'Low Error'}
+                  <Badge variant={getBadgeVariant(key, value)} className="mr-2">
+                    {getBadgeLabel(key, value)}
                   </Badge>
                 )}
                 <div className="text-base font-bold">
@@ -139,6 +168,7 @@ export const ModelMetrics: React.FC<ModelMetricsProps> = ({ modelMetrics }) => {
                   />
                 ) : (
                   <Progress 
+                    // Inverse scale for error metrics, capped at max 1.0
                     value={(1 - Math.min(value, 1)) * 100} 
                     className="h-2"
                     indicatorClassName={getMetricColor(key, value)}
