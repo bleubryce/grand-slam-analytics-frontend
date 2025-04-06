@@ -13,7 +13,7 @@ class AuthService {
     try {
       console.log('Attempting to login with credentials:', { username: credentials.username, password: '********' });
       
-      // Make the API call to the backend - use the correct endpoint
+      // Make the API call to the backend
       const response = await apiClient.post<ApiResponse<LoginResponse>>('/api/auth/login', credentials);
       
       console.log('Login response received:', response.status, response.data);
