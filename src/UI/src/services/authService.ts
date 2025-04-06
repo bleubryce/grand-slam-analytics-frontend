@@ -1,4 +1,3 @@
-
 import { AxiosResponse } from 'axios';
 import { apiClient } from './apiClient';
 import { config } from '@/config';
@@ -41,10 +40,12 @@ class AuthService {
   }
 
   async logout(): Promise<AxiosResponse<ApiResponse<null>>> {
+    console.log('Logging out user...');
     const token = localStorage.getItem(config.auth.tokenKey);
     
     if (this.useMockResponse) {
       console.log('Using mock logout response in development');
+      // Always clear local storage regardless of mode
       localStorage.removeItem(config.auth.tokenKey);
       localStorage.removeItem('user_data');
       
@@ -64,15 +65,31 @@ class AuthService {
       });
     }
     
-    return apiClient.post<ApiResponse<null>>(
-      '/api/auth/logout',
-      {},
-      {
-        headers: {
-          Authorization: `Bearer ${token}`
+    try {
+      const response = await apiClient.post<ApiResponse<null>>(
+        '/api/auth/logout',
+        {},
+        {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
         }
-      }
-    );
+      );
+      
+      // Always clear local storage on logout
+      localStorage.removeItem(config.auth.tokenKey);
+      localStorage.removeItem('user_data');
+      
+      return response;
+    } catch (error) {
+      console.error('Logout error:', error);
+      
+      // Even if API call fails, clear local storage
+      localStorage.removeItem(config.auth.tokenKey);
+      localStorage.removeItem('user_data');
+      
+      throw error;
+    }
   }
 
   async getCurrentUser(): Promise<AxiosResponse<ApiResponse<User>>> {

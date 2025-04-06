@@ -1,10 +1,11 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { AlertTriangle } from "lucide-react";
+import { AlertTriangle, InfoIcon } from "lucide-react";
 import { useModelAnalysis } from "@/hooks/useModelAnalysis";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { useToast } from "@/hooks/use-toast";
 import AnalysisForm from "./AnalysisForm";
 import PredictionResults from "./PredictionResults";
 import ModelMetrics from "./ModelMetrics";
@@ -14,6 +15,7 @@ export const ModelAnalysisPanel: React.FC<{ className?: string }> = ({ className
   const [analysisType, setAnalysisType] = useState<'team' | 'player' | 'game' | 'ml'>('team');
   const [entityId, setEntityId] = useState<string>('');
   const [activeTab, setActiveTab] = useState<string>('run');
+  const { toast } = useToast();
   
   const { 
     isModelEnabled,
@@ -26,16 +28,50 @@ export const ModelAnalysisPanel: React.FC<{ className?: string }> = ({ className
     predictionError,
   } = useModelAnalysis();
 
+  // Add effect to show toast when tab changes to provide feedback
+  useEffect(() => {
+    toast({
+      title: `Switched to ${activeTab === 'run' ? 'Run Analysis' : activeTab === 'metrics' ? 'Model Metrics' : 'Model Info'} tab`,
+      description: "Click on interactive elements to analyze baseball data",
+      duration: 2000,
+    });
+  }, [activeTab, toast]);
+
   const handleRunAnalysis = () => {
-    if (!entityId) return;
+    if (!entityId) {
+      toast({
+        title: "Input required",
+        description: "Please enter an entity ID to analyze",
+        variant: "destructive",
+      });
+      return;
+    }
     
     const id = parseInt(entityId);
-    if (isNaN(id)) return;
+    if (isNaN(id)) {
+      toast({
+        title: "Invalid ID",
+        description: "Please enter a valid numeric ID",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    toast({
+      title: "Running analysis",
+      description: `Analyzing ${analysisType} with ID ${id}`,
+    });
     
     runPrediction({ 
       modelType: analysisType,
       inputData: { id, type: analysisType }
     });
+  };
+
+  // Handle tab change with clear user feedback
+  const handleTabChange = (value: string) => {
+    setActiveTab(value);
+    console.log(`Tab changed to: ${value}`);
   };
 
   if (!isModelEnabled) {
@@ -60,14 +96,23 @@ export const ModelAnalysisPanel: React.FC<{ className?: string }> = ({ className
   return (
     <Card className={className}>
       <CardHeader>
-        <CardTitle>Advanced Model Analysis</CardTitle>
+        <CardTitle className="flex items-center gap-2">
+          Advanced Model Analysis
+          <InfoIcon 
+            className="h-4 w-4 text-muted-foreground cursor-help" 
+            onClick={() => toast({
+              title: "Advanced Model Analysis",
+              description: "Run predictions and view model metrics for baseball analytics",
+            })}
+          />
+        </CardTitle>
       </CardHeader>
       <CardContent>
-        <Tabs value={activeTab} onValueChange={setActiveTab}>
+        <Tabs value={activeTab} onValueChange={handleTabChange}>
           <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="run">Run Analysis</TabsTrigger>
-            <TabsTrigger value="metrics">Model Metrics</TabsTrigger>
-            <TabsTrigger value="info">Model Info</TabsTrigger>
+            <TabsTrigger value="run" className="active:bg-primary">Run Analysis</TabsTrigger>
+            <TabsTrigger value="metrics" className="active:bg-primary">Model Metrics</TabsTrigger>
+            <TabsTrigger value="info" className="active:bg-primary">Model Info</TabsTrigger>
           </TabsList>
           
           <TabsContent value="run" className="space-y-4 mt-4">

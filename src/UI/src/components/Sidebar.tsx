@@ -14,6 +14,7 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
+import { useToast } from "@/hooks/use-toast";
 
 interface NavItemProps {
   icon: React.ElementType;
@@ -49,6 +50,7 @@ const NavItem = ({ icon: Icon, title, isActive, badge, onClick }: NavItemProps) 
 const Sidebar = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const { toast } = useToast();
   const currentPath = location.pathname;
   
   // Set initial active item based on current path
@@ -80,7 +82,16 @@ const Sidebar = () => {
   ];
 
   const handleNavigation = (title: string, path: string) => {
+    console.log(`Navigating to: ${title} (${path})`);
     setActiveItem(title);
+    
+    // Show toast to provide feedback that click was registered
+    toast({
+      title: `Navigating to ${title}`,
+      description: `Loading ${title.toLowerCase()} page`,
+      duration: 2000,
+    });
+    
     navigate(path);
   };
 
