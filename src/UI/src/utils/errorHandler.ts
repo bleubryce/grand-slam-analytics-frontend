@@ -1,57 +1,44 @@
 
-import { AxiosError } from 'axios';
-import { toast } from '@/hooks/use-toast';
-import { ApiErrorResponse } from '../services/api';
+import axios, { AxiosError } from 'axios';
 
-export const handleApiError = (error: AxiosError<ApiErrorResponse>) => {
-  let errorMessage = 'An unexpected error occurred';
+export interface ApiErrorResponse {
+  status: string;
+  message: string;
+  error?: any;
+}
+
+/**
+ * Handle API errors consistently across the application
+ */
+export const handleApiError = (error: any): Promise<never> => {
+  console.error('API Error:', error);
   
-  if (error.response) {
-    // Server responded with error
-    const { status, data } = error.response;
+  // Format the error message
+  let errorMessage = 'An unknown error occurred';
+  
+  if (axios.isAxiosError(error)) {
+    const axiosError = error as AxiosError<ApiErrorResponse>;
     
-    switch (status) {
-      case 401:
-        errorMessage = 'Authentication failed. Please log in again.';
-        // Handle unauthorized - redirect to login page or refresh token
-        localStorage.removeItem('jwt_token');
-        window.location.href = '/login';
-        break;
-      case 403:
-        errorMessage = 'You do not have permission to perform this action';
-        break;
-      case 404:
-        errorMessage = 'The requested resource was not found';
-        break;
-      case 422:
-        errorMessage = 'Validation failed';
-        if (data?.errors) {
-          const firstError = Object.values(data.errors)[0]?.[0];
-          if (firstError) {
-            errorMessage = firstError;
-          }
-        }
-        break;
-      case 500:
-        errorMessage = 'Server error. Please try again later';
-        break;
-      default:
-        errorMessage = data?.message || errorMessage;
+    // Try to get error message from response
+    if (axiosError.response?.data?.message) {
+      errorMessage = axiosError.response.data.message;
+    } else if (axiosError.message) {
+      errorMessage = axiosError.message;
     }
-  } else if (error.request) {
-    // Request made but no response
-    errorMessage = 'No response received from server. Please check your connection';
-  } else {
-    // Error in request setup
-    errorMessage = error.message || errorMessage;
+    
+    // Network errors
+    if (axiosError.code === 'ECONNABORTED') {
+      errorMessage = 'Request timeout. Please try again.';
+    } else if (!axiosError.response) {
+      errorMessage = 'Network error. Please check your connection.';
+    }
+  } else if (error instanceof Error) {
+    errorMessage = error.message;
   }
   
-  // Show error toast
-  toast({
-    title: 'Error',
-    description: errorMessage,
-    variant: 'destructive',
+  // Return rejected promise with formatted error
+  return Promise.reject({
+    message: errorMessage,
+    originalError: error
   });
-  
-  return Promise.reject(error);
 };

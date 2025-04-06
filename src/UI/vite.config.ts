@@ -20,6 +20,13 @@ export default defineConfig({
     port: 3000,
     strictPort: true,
     host: true,
+    proxy: {
+      '/api': {
+        target: 'http://localhost:3001',
+        changeOrigin: true,
+        secure: false,
+      }
+    }
   },
   define: {
     'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV || 'development')

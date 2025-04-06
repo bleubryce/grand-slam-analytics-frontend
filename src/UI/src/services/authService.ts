@@ -11,12 +11,12 @@ class AuthService {
     // Use mock responses in development if the backend is not available
     // Set to true to use mock responses in development
     this.useMockResponse = config.app.environment === 'development';
-    console.log('Using mock responses:', this.useMockResponse);
+    console.log('AuthService initialized - Using mock responses:', this.useMockResponse);
   }
 
   async login(credentials: { username: string; password: string }): Promise<AxiosResponse<ApiResponse<LoginResponse>>> {
     try {
-      console.log('Logging in with credentials:', credentials);
+      console.log('Logging in with credentials:', { username: credentials.username, password: '********' });
       
       // For development, allow only admin/password if mocks are enabled
       if (this.useMockResponse) {

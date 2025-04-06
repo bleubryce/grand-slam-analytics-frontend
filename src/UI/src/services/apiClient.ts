@@ -16,7 +16,7 @@ export const apiClient = axios.create({
 // Add request interceptor to include auth token in requests
 apiClient.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem('jwt_token');
+    const token = localStorage.getItem(config.auth.tokenKey);
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
@@ -29,10 +29,14 @@ apiClient.interceptors.request.use(
 
 // Add response interceptor to handle common errors
 apiClient.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    console.log(`Response from ${response.config.url}:`, response.status);
+    return response;
+  },
   (error) => {
     // Handle 401 Unauthorized responses by clearing auth state
     if (error.response && error.response.status === 401) {
+      console.log('401 Unauthorized response, clearing auth state');
       localStorage.removeItem('jwt_token');
       localStorage.removeItem('user_data');
       // Redirect to login page
@@ -45,22 +49,5 @@ apiClient.interceptors.response.use(
   }
 );
 
-// Model-specific API methods
-export const modelApi = {
-  // Run model prediction with provided data
-  predict: async (modelType, inputData) => {
-    return apiClient.post(`${config.api.endpoints.analysis}/${modelType}`, inputData);
-  },
-  
-  // Get model metadata (version, parameters, etc)
-  getModelInfo: async (modelType) => {
-    return apiClient.get(`${config.api.endpoints.analysis}/model-info/${modelType}`);
-  },
-  
-  // Get model performance metrics
-  getModelMetrics: async (modelType) => {
-    return apiClient.get(`${config.api.endpoints.analysis}/metrics/${modelType}`);
-  }
-};
-
+// Export the API client
 export default apiClient;
