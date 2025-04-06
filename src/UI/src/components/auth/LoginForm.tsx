@@ -29,6 +29,7 @@ const LoginForm = () => {
     setIsLoading(true);
     try {
       await login({ username, password });
+      // Success is handled by the AuthContext through redirection
     } catch (err: any) {
       console.error("Login failed:", err);
       
@@ -71,7 +72,7 @@ const LoginForm = () => {
         <Alert>
           <Info className="h-4 w-4" />
           <AlertDescription>
-            <p className="mb-1">Use credentials:</p>
+            <p className="mb-1">Use these credentials:</p>
             <p className="text-sm">Username: <strong>admin</strong>, Password: <strong>password</strong></p>
           </AlertDescription>
         </Alert>
@@ -84,7 +85,6 @@ const LoginForm = () => {
             value={username}
             onChange={(e) => setUsername(e.target.value)}
             required
-            onClick={fillDemoCredentials}
           />
         </div>
         <div className="space-y-2">
@@ -105,6 +105,15 @@ const LoginForm = () => {
             onChange={(e) => setPassword(e.target.value)}
             required
           />
+        </div>
+        <div className="text-center">
+          <button 
+            type="button" 
+            onClick={fillDemoCredentials}
+            className="text-xs text-baseball-navy hover:underline"
+          >
+            Fill demo credentials
+          </button>
         </div>
       </CardContent>
       <CardFooter>

@@ -9,8 +9,8 @@ class AuthService {
 
   constructor() {
     // Use mock responses in development if the backend is not available
-    // Set to false by default to use the real API endpoints
-    this.useMockResponse = config.app.environment === 'development' && import.meta.env.VITE_USE_MOCK_API === 'true';
+    // Set to true to use mock responses in development
+    this.useMockResponse = config.app.environment === 'development';
   }
 
   async login(credentials: { username: string; password: string }): Promise<AxiosResponse<ApiResponse<LoginResponse>>> {
@@ -150,7 +150,7 @@ class AuthService {
       id: '1',
       username: credentials.username,
       email: `${credentials.username}@example.com`,
-      role: isAdmin ? 'admin' : 'user'  // Assign admin role if username is admin
+      role: isAdmin ? 'admin' : 'user'
     };
     
     const mockResponse: ApiResponse<LoginResponse> = {
