@@ -1,8 +1,10 @@
 
 import React from 'react';
-import { Loader2, Info } from "lucide-react";
+import { Loader2, Info, AlertTriangle } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Progress } from "@/components/ui/progress";
+import { Badge } from "@/components/ui/badge";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 interface ModelMetricsProps {
   modelMetrics: Record<string, any> | null;
@@ -30,28 +32,93 @@ export const ModelMetrics: React.FC<ModelMetricsProps> = ({ modelMetrics }) => {
     return descriptions[key.toLowerCase()] || 'Model performance metric';
   };
 
+  // Helper function to get color based on metric value
+  const getMetricColor = (key: string, value: number) => {
+    const lowerKey = key.toLowerCase();
+    
+    if (isPercentageMetric(key)) {
+      if (value >= 0.9) return "bg-green-500";
+      if (value >= 0.7) return "bg-amber-500";
+      return "bg-red-500";
+    }
+    
+    // For error metrics (lower is better)
+    if (['mse', 'rmse', 'mae'].includes(lowerKey)) {
+      if (value <= 0.05) return "bg-green-500";
+      if (value <= 0.15) return "bg-amber-500";
+      return "bg-red-500";
+    }
+    
+    return "bg-blue-500";
+  };
+
+  // Get badge variant based on metric value
+  const getBadgeVariant = (key: string, value: number) => {
+    const lowerKey = key.toLowerCase();
+    
+    if (isPercentageMetric(key)) {
+      if (value >= 0.9) return "success";
+      if (value >= 0.7) return "warning";
+      return "destructive";
+    }
+    
+    return "default";
+  };
+
+  if (!modelMetrics) {
+    return (
+      <div className="space-y-4">
+        <h3 className="text-lg font-medium">Model Performance Metrics</h3>
+        <div className="flex items-center justify-center p-6">
+          <Loader2 className="h-6 w-6 animate-spin mr-2" />
+          <span>Loading metrics...</span>
+        </div>
+      </div>
+    );
+  }
+
+  if (Object.keys(modelMetrics).length === 0) {
+    return (
+      <div className="space-y-4">
+        <h3 className="text-lg font-medium">Model Performance Metrics</h3>
+        <Alert>
+          <AlertTriangle className="h-4 w-4" />
+          <AlertDescription>
+            No metrics available for this model yet. Run a prediction to generate metrics.
+          </AlertDescription>
+        </Alert>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-4">
       <h3 className="text-lg font-medium">Model Performance Metrics</h3>
       
-      {modelMetrics ? (
-        <div className="space-y-3">
-          {Object.entries(modelMetrics).map(([key, value]) => (
-            <div key={key} className="p-3 border rounded-md">
-              <div className="flex items-center justify-between mb-1">
-                <div className="flex items-center">
-                  <div className="text-sm font-medium text-muted-foreground">{key}</div>
-                  <TooltipProvider>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <Info className="h-4 w-4 ml-1 text-muted-foreground" />
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        <p>{getMetricDescription(key)}</p>
-                      </TooltipContent>
-                    </Tooltip>
-                  </TooltipProvider>
-                </div>
+      <div className="space-y-3">
+        {Object.entries(modelMetrics).map(([key, value]) => (
+          <div key={key} className="p-3 border rounded-md">
+            <div className="flex items-center justify-between mb-1">
+              <div className="flex items-center">
+                <div className="text-sm font-medium text-muted-foreground">{key}</div>
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Info className="h-4 w-4 ml-1 text-muted-foreground cursor-help" />
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>{getMetricDescription(key)}</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              </div>
+              
+              <div className="flex items-center">
+                {typeof value === 'number' && (
+                  <Badge variant={getBadgeVariant(key, value) as any} className="mr-2">
+                    {isPercentageMetric(key) ? 'Good' : 'Low Error'}
+                  </Badge>
+                )}
                 <div className="text-base font-bold">
                   {typeof value === 'number' ? (
                     isPercentageMetric(key) ? 
@@ -60,22 +127,28 @@ export const ModelMetrics: React.FC<ModelMetricsProps> = ({ modelMetrics }) => {
                   ) : JSON.stringify(value)}
                 </div>
               </div>
-              
-              {typeof value === 'number' && isPercentageMetric(key) && (
-                <Progress 
-                  value={value * 100} 
-                  className="h-2"
-                />
-              )}
             </div>
-          ))}
-        </div>
-      ) : (
-        <div className="flex items-center justify-center p-6">
-          <Loader2 className="h-6 w-6 animate-spin mr-2" />
-          <span>Loading metrics...</span>
-        </div>
-      )}
+            
+            {typeof value === 'number' && (
+              <div className="mt-2">
+                {isPercentageMetric(key) ? (
+                  <Progress 
+                    value={value * 100} 
+                    className="h-2"
+                    indicatorClassName={getMetricColor(key, value)}
+                  />
+                ) : (
+                  <Progress 
+                    value={(1 - Math.min(value, 1)) * 100} 
+                    className="h-2"
+                    indicatorClassName={getMetricColor(key, value)}
+                  />
+                )}
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
     </div>
   );
 };
