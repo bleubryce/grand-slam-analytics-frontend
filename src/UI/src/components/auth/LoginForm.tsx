@@ -30,8 +30,16 @@ const LoginForm = () => {
     setIsLoading(true);
     try {
       console.log("Attempting login with:", { username, password: "*".repeat(password.length) });
+      
+      // Add more verbose logging
+      console.log("Before login call");
       await login({ username, password });
-      console.log("Login successful");
+      console.log("After login call - Login successful");
+      
+      toast({
+        title: "Login successful",
+        description: "You are now being redirected to the dashboard.",
+      });
     } catch (err: any) {
       console.error("Login failed:", err);
       
@@ -44,6 +52,12 @@ const LoginForm = () => {
       }
       
       setError(errorMsg);
+      
+      toast({
+        variant: "destructive",
+        title: "Login failed",
+        description: errorMsg,
+      });
     } finally {
       setIsLoading(false);
     }

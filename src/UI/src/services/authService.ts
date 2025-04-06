@@ -43,7 +43,6 @@ class AuthService {
 
   async logout(): Promise<AxiosResponse<ApiResponse<null>>> {
     console.log('Logging out user...');
-    const token = localStorage.getItem(config.auth.tokenKey);
     
     try {
       const response = await apiClient.post<ApiResponse<null>>('/api/auth/logout');

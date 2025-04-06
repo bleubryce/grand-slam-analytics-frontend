@@ -75,8 +75,7 @@ apiClient.interceptors.response.use(
       }
     }
     
-    // Use the error handler utility for other errors
-    return handleApiError(error);
+    return Promise.reject(error);
   }
 );
 
@@ -100,8 +99,7 @@ modelApi.interceptors.response.use(
       }
     }
     
-    // Use the error handler utility for other errors
-    return handleApiError(error);
+    return Promise.reject(error);
   }
 );
 
