@@ -1,6 +1,7 @@
 
 import { useState, useEffect } from 'react';
 import { healthService } from '../services/healthService';
+import { modelIntegration } from '../utils/modelIntegration';
 import { config } from '../config';
 
 export const useHealthCheck = () => {
@@ -67,24 +68,26 @@ export const useHealthCheck = () => {
     }
 
     try {
-      const result = await healthService.checkModelHealth();
-      setModelHealth(result.healthy);
-      setModelMessage(result.message);
+      // First check basic model health
+      const modelAvailability = await modelIntegration.checkModelAvailability();
       
-      // Get detailed model info if basic check passes
-      if (result.healthy) {
-        try {
-          const detailedResult = await healthService.checkDetailedModelHealth();
-          setModelDetails(detailedResult.details);
-        } catch (detailsError) {
-          console.error('Failed to fetch detailed model info:', detailsError);
-        }
+      if (!modelAvailability.available) {
+        setModelHealth(false);
+        setModelMessage('ML model service is not available');
+        return false;
       }
       
-      return result.healthy;
-    } catch (error) {
+      // If basic health check passes, get detailed model info
+      const modelDetailsResult = await modelIntegration.getModelDetails();
+      setModelDetails(modelDetailsResult);
+      
+      setModelHealth(true);
+      setModelMessage(`ML model is operational (version ${modelDetailsResult.version})`);
+      return true;
+    } catch (error: any) {
+      console.error('Model health check failed:', error);
       setModelHealth(false);
-      setModelMessage('Error checking ML model status');
+      setModelMessage(`Error checking ML model status: ${error?.message || 'Unknown error'}`);
       return false;
     }
   };
@@ -101,10 +104,17 @@ export const useHealthCheck = () => {
     setIsLoading(true);
     console.log('Running health checks...');
     
-    await checkBackend();
-    await checkWebsocket();
-    await checkModel();
-    checkEnvironment();
+    const backendResult = await checkBackend();
+    const websocketResult = await checkWebsocket();
+    const modelResult = await checkModel();
+    const envResult = checkEnvironment();
+    
+    console.log('Health check results:', {
+      backend: backendResult,
+      websocket: websocketResult,
+      model: modelResult,
+      environment: envResult
+    });
     
     setIsLoading(false);
   };

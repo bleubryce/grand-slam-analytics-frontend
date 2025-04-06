@@ -15,7 +15,7 @@ export const apiClient = axios.create({
 
 // Create a separate instance for ML model API requests
 export const modelApi = axios.create({
-  baseURL: config.api.backendUrl,
+  baseURL: config.api.modelUrl || config.api.backendUrl,
   timeout: config.api.timeout * 2, // Double timeout for model requests
   headers: {
     'Content-Type': 'application/json',
@@ -105,22 +105,31 @@ modelApi.interceptors.response.use(
   }
 );
 
-// Model API methods
+// Enhanced Model API methods
 modelApi.getModelInfo = async (modelType) => {
+  console.log(`Fetching model info for: ${modelType}`);
   return await modelApi.get(`/api/models/${modelType}/info`);
 };
 
 modelApi.getModelMetrics = async (modelType) => {
+  console.log(`Fetching model metrics for: ${modelType}`);
   return await modelApi.get(`/api/models/${modelType}/metrics`);
 };
 
 modelApi.predict = async (modelType, inputData) => {
+  console.log(`Running prediction for model type: ${modelType}`, inputData);
   return await modelApi.post(`/api/models/${modelType}/predict`, inputData);
 };
 
 modelApi.train = async (modelType, trainingData) => {
+  console.log(`Training model type: ${modelType} with data:`, trainingData);
   return await modelApi.post(`/api/models/${modelType}/train`, trainingData);
 };
 
-// Export the API client
+modelApi.checkHealth = async () => {
+  console.log('Checking model health status');
+  return await modelApi.get('/health');
+};
+
+// Export the API clients
 export default apiClient;
