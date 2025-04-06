@@ -15,15 +15,15 @@ class AuthService {
 
   async login(credentials: { username: string; password: string }): Promise<AxiosResponse<ApiResponse<LoginResponse>>> {
     try {
-      // For development, allow any username/password if mocks are enabled
+      // For development, allow only admin/password if mocks are enabled
       if (this.useMockResponse) {
         console.log('Using mock login response in development');
         
-        // Check if credentials match expected values shown in the UI
+        // Check if credentials match expected values
         const validCredentials = 
           (credentials.username.toLowerCase() === 'admin' && credentials.password === 'password');
         
-        // If not valid, return error (even in mock/dev mode)
+        // If not valid, return error
         if (!validCredentials) {
           console.warn('Invalid credentials in mock mode. Valid credentials are: username=admin, password=password');
           return Promise.reject({ 

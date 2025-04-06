@@ -17,7 +17,6 @@ const Login = () => {
   const [email, setEmail] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
-  const [showCredentialsHelp, setShowCredentialsHelp] = useState(false);
   const { login, isAuthenticated } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -55,9 +54,6 @@ const Login = () => {
       
       setError(errorMsg);
       
-      // Show credentials hint after a failed attempt
-      setShowCredentialsHelp(true);
-      
       toast({
         title: "Authentication Failed",
         description: "Invalid username or password. Please try again.",
@@ -70,10 +66,8 @@ const Login = () => {
 
   // For development, auto-fill credentials for easy login
   const fillDemoCredentials = () => {
-    if (process.env.NODE_ENV === 'development') {
-      setUsername('admin');
-      setPassword('password');
-    }
+    setUsername('admin');
+    setPassword('password');
   };
 
   return (
