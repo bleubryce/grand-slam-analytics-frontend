@@ -11,13 +11,17 @@ export default defineConfig({
       '@': path.resolve(__dirname, './src'),
     },
   },
-  server: {
-    proxy: {
-      '/api': {
-        target: 'http://localhost:3001',
-        changeOrigin: true,
-        secure: false,
-      },
-    },
+  build: {
+    outDir: 'dist',
+    sourcemap: true,
+    emptyOutDir: true,
   },
+  server: {
+    port: 3000,
+    strictPort: true,
+    host: true,
+  },
+  define: {
+    'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV || 'development')
+  }
 });
