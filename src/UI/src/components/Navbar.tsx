@@ -27,7 +27,9 @@ const Navbar = () => {
         title: "Logged out successfully",
         description: "You have been logged out of your account",
       });
-      navigate("/login");
+      setTimeout(() => {
+        navigate("/login");
+      }, 500);
     } catch (error) {
       console.error("Logout failed:", error);
       toast({
@@ -62,10 +64,23 @@ const Navbar = () => {
         title: "Settings",
         description: "Settings feature coming soon",
       });
-      navigate("/settings");
+      setTimeout(() => {
+        navigate("/settings");
+      }, 300);
     } else if (action === 'logout') {
       handleLogout();
     }
+  };
+
+  const handleLogoClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    toast({
+      title: "Navigating Home",
+      description: "Going to dashboard",
+    });
+    setTimeout(() => {
+      navigate('/');
+    }, 300);
   };
 
   return (
@@ -80,10 +95,7 @@ const Navbar = () => {
           >
             <Menu className="h-6 w-6" />
           </Button>
-          <a href="/" className="flex items-center" onClick={(e) => {
-            e.preventDefault();
-            navigate('/');
-          }}>
+          <a href="/" className="flex items-center" onClick={handleLogoClick}>
             <div className="bg-baseball-navy rounded-full w-10 h-10 flex items-center justify-center mr-2">
               <span className="text-white font-bold text-xl">BA</span>
             </div>
@@ -106,7 +118,12 @@ const Navbar = () => {
             />
           </div>
 
-          <Button variant="ghost" size="icon" className="mr-2" onClick={handleNotificationClick}>
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            className="mr-2" 
+            onClick={handleNotificationClick}
+          >
             <Bell className="h-5 w-5" />
           </Button>
 

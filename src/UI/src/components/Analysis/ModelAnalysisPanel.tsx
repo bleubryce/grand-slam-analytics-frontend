@@ -26,16 +26,22 @@ export const ModelAnalysisPanel: React.FC<{ className?: string }> = ({ className
     isPredicting,
     predictionResult,
     predictionError,
+    resetPrediction
   } = useModelAnalysis();
 
   // Add effect to show toast when tab changes to provide feedback
   useEffect(() => {
     toast({
-      title: `Switched to ${activeTab === 'run' ? 'Run Analysis' : activeTab === 'metrics' ? 'Model Metrics' : 'Model Info'} tab`,
+      title: `${activeTab === 'run' ? 'Run Analysis' : activeTab === 'metrics' ? 'Model Metrics' : 'Model Info'} tab`,
       description: "Click on interactive elements to analyze baseball data",
       duration: 2000,
     });
   }, [activeTab, toast]);
+
+  // Reset prediction when changing analysis type
+  useEffect(() => {
+    resetPrediction();
+  }, [analysisType, resetPrediction]);
 
   const handleRunAnalysis = () => {
     if (!entityId) {
@@ -108,11 +114,11 @@ export const ModelAnalysisPanel: React.FC<{ className?: string }> = ({ className
         </CardTitle>
       </CardHeader>
       <CardContent>
-        <Tabs value={activeTab} onValueChange={handleTabChange}>
+        <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
           <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="run" className="active:bg-primary">Run Analysis</TabsTrigger>
-            <TabsTrigger value="metrics" className="active:bg-primary">Model Metrics</TabsTrigger>
-            <TabsTrigger value="info" className="active:bg-primary">Model Info</TabsTrigger>
+            <TabsTrigger value="run" className="text-sm">Run Analysis</TabsTrigger>
+            <TabsTrigger value="metrics" className="text-sm">Model Metrics</TabsTrigger>
+            <TabsTrigger value="info" className="text-sm">Model Info</TabsTrigger>
           </TabsList>
           
           <TabsContent value="run" className="space-y-4 mt-4">

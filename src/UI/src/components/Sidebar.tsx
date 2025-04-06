@@ -12,7 +12,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 
@@ -34,7 +34,10 @@ const NavItem = ({ icon: Icon, title, isActive, badge, onClick }: NavItemProps) 
           ? "bg-sidebar-accent text-sidebar-accent-foreground"
           : "text-sidebar-foreground hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground"
       )}
-      onClick={onClick}
+      onClick={(e) => {
+        e.preventDefault();
+        onClick();
+      }}
     >
       <Icon className="h-5 w-5" />
       <span className="grow text-left">{title}</span>
@@ -69,6 +72,11 @@ const Sidebar = () => {
   
   const [activeItem, setActiveItem] = useState(getInitialActiveItem);
   
+  // Update active item when location changes
+  useEffect(() => {
+    setActiveItem(getInitialActiveItem());
+  }, [location]);
+  
   const navItems = [
     { title: "Dashboard", icon: Home, path: "/" },
     { title: "Team Management", icon: Users, path: "/team", badge: "New" },
@@ -85,14 +93,16 @@ const Sidebar = () => {
     console.log(`Navigating to: ${title} (${path})`);
     setActiveItem(title);
     
-    // Show toast to provide feedback that click was registered
     toast({
       title: `Navigating to ${title}`,
       description: `Loading ${title.toLowerCase()} page`,
       duration: 2000,
     });
     
-    navigate(path);
+    // Use setTimeout to ensure the toast is visible before navigation
+    setTimeout(() => {
+      navigate(path);
+    }, 100);
   };
 
   return (
