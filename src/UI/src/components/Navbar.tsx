@@ -27,9 +27,7 @@ const Navbar = () => {
         title: "Logged out successfully",
         description: "You have been logged out of your account",
       });
-      setTimeout(() => {
-        navigate("/login");
-      }, 500);
+      navigate("/login");
     } catch (error) {
       console.error("Logout failed:", error);
       toast({
@@ -62,11 +60,9 @@ const Navbar = () => {
     } else if (action === 'settings') {
       toast({
         title: "Settings",
-        description: "Settings feature coming soon",
+        description: "Navigating to settings",
       });
-      setTimeout(() => {
-        navigate("/settings");
-      }, 300);
+      navigate("/settings");
     } else if (action === 'logout') {
       handleLogout();
     }
@@ -78,9 +74,7 @@ const Navbar = () => {
       title: "Navigating Home",
       description: "Going to dashboard",
     });
-    setTimeout(() => {
-      navigate('/');
-    }, 300);
+    navigate('/');
   };
 
   return (
@@ -133,7 +127,7 @@ const Navbar = () => {
                 <User className="h-5 w-5" />
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
+            <DropdownMenuContent align="end" className="bg-white">
               <DropdownMenuLabel>My Account</DropdownMenuLabel>
               <DropdownMenuSeparator />
               <DropdownMenuItem onClick={() => handleProfileAction('profile')}>

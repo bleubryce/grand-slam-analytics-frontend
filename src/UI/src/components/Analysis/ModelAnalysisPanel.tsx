@@ -78,6 +78,12 @@ export const ModelAnalysisPanel: React.FC<{ className?: string }> = ({ className
   const handleTabChange = (value: string) => {
     setActiveTab(value);
     console.log(`Tab changed to: ${value}`);
+    
+    // Add toast notification when tab changes
+    toast({
+      title: `Switched to ${value === 'run' ? 'Run Analysis' : value === 'metrics' ? 'Model Metrics' : 'Model Info'}`,
+      description: `You are now viewing the ${value} tab`,
+    });
   };
 
   if (!isModelEnabled) {

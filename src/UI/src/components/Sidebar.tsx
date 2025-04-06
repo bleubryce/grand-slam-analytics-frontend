@@ -34,10 +34,7 @@ const NavItem = ({ icon: Icon, title, isActive, badge, onClick }: NavItemProps) 
           ? "bg-sidebar-accent text-sidebar-accent-foreground"
           : "text-sidebar-foreground hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground"
       )}
-      onClick={(e) => {
-        e.preventDefault();
-        onClick();
-      }}
+      onClick={onClick}
     >
       <Icon className="h-5 w-5" />
       <span className="grow text-left">{title}</span>
@@ -99,10 +96,8 @@ const Sidebar = () => {
       duration: 2000,
     });
     
-    // Use setTimeout to ensure the toast is visible before navigation
-    setTimeout(() => {
-      navigate(path);
-    }, 100);
+    // Navigate immediately without setTimeout
+    navigate(path);
   };
 
   return (
