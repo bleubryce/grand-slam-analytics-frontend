@@ -9,6 +9,7 @@ interface AppConfig {
 // API configuration
 interface ApiConfig {
   backendUrl: string;
+  modelUrl?: string;
   websocketUrl: string;
   timeout: number;
 }
@@ -35,13 +36,13 @@ export const config: Config = {
     environment: (import.meta.env.MODE || 'development') as 'development' | 'production' | 'test'
   },
   api: {
-    backendUrl: import.meta.env.VITE_BACKEND_API_URL || 'http://localhost:3001', // Updated to match backend port
+    backendUrl: import.meta.env.VITE_BACKEND_API_URL || '', // Empty string to use relative URLs with the proxy
     websocketUrl: import.meta.env.VITE_WEBSOCKET_URL || 'ws://localhost:3001',
     timeout: parseInt(import.meta.env.VITE_API_TIMEOUT || '30000')
   },
   auth: {
-    tokenKey: 'baseball_analytics_token',
-    refreshTokenKey: 'baseball_analytics_refresh_token',
-    expiresInKey: 'baseball_analytics_expires_in'
+    tokenKey: 'jwt_token',
+    refreshTokenKey: 'refresh_token',
+    expiresInKey: 'expires_in'
   }
 };

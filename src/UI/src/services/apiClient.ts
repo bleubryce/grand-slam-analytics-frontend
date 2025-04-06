@@ -26,7 +26,7 @@ export const modelApi = axios.create({
 // Add request interceptor to include auth token in requests
 apiClient.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem('jwt_token'); // Use consistent key
+    const token = localStorage.getItem('jwt_token');
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
       console.log('Added auth token to request:', config.url);
@@ -42,7 +42,7 @@ apiClient.interceptors.request.use(
 // Same interceptor for model API
 modelApi.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem('jwt_token'); // Use consistent key
+    const token = localStorage.getItem('jwt_token');
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
       console.log('Added auth token to model request:', config.url);

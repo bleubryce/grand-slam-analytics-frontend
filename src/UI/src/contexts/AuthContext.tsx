@@ -4,6 +4,7 @@ import { authService } from '../services/authService';
 import { User } from '../services/types';
 import { useToast } from '@/hooks/use-toast';
 import { useNavigate } from 'react-router-dom';
+import { config } from '@/config';
 
 interface AuthContextType {
   user: User | null;
@@ -25,11 +26,11 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [loading, setLoading] = useState<boolean>(true);
   const { toast } = useToast();
   const navigate = useNavigate();
+  const tokenKey = 'jwt_token'; // Using consistent token key
 
   useEffect(() => {
     // On initial load, check if user is already authenticated
     const initAuth = async () => {
-      const tokenKey = 'jwt_token'; // Use consistent token key
       const storedToken = localStorage.getItem(tokenKey);
       const storedUser = localStorage.getItem('user_data');
       
@@ -53,7 +54,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   }, []);
 
   const checkAuth = async (): Promise<boolean> => {
-    const token = localStorage.getItem('jwt_token');
+    const token = localStorage.getItem(tokenKey);
     if (!token) {
       console.log('No token found in localStorage');
       return false;
@@ -75,7 +76,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     } catch (error) {
       console.error('Token validation failed:', error);
       // Clear invalid authentication data
-      localStorage.removeItem('jwt_token');
+      localStorage.removeItem(tokenKey);
       localStorage.removeItem('user_data');
       setUser(null);
       return false;
@@ -146,7 +147,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       });
     } finally {
       // Always clear local state regardless of API result
-      localStorage.removeItem('jwt_token');
+      localStorage.removeItem(tokenKey);
       localStorage.removeItem('user_data');
       setUser(null);
       setLoading(false);
