@@ -1,3 +1,4 @@
+
 import { AxiosResponse } from 'axios';
 import { apiClient } from './apiClient';
 import { config } from '@/config';
@@ -18,14 +19,22 @@ class AuthService {
       if (this.useMockResponse) {
         console.log('Using mock login response in development');
         
-        // Try to match against known admin accounts for better simulation
-        const isKnownAdmin = 
-          (credentials.username.toLowerCase() === 'admin' && credentials.password === 'admin123') ||
-          (credentials.username.toLowerCase() === 'admin' && credentials.password === 'baseball_admin_2025');
+        // Check if credentials match expected values shown in the UI
+        const validCredentials = 
+          (credentials.username.toLowerCase() === 'admin' && credentials.password === 'password');
         
-        if (!isKnownAdmin) {
-          console.warn('Invalid credentials in mock mode. Valid credentials are: username=admin, password=admin123 or password=baseball_admin_2025');
-          // Still allow login in mock/dev mode, but log a warning
+        // If not valid, return error (even in mock/dev mode)
+        if (!validCredentials) {
+          console.warn('Invalid credentials in mock mode. Valid credentials are: username=admin, password=password');
+          return Promise.reject({ 
+            response: { 
+              data: { 
+                status: 'error',
+                message: 'Invalid username or password. Please try again.',
+                data: null
+              } 
+            } 
+          });
         }
         
         return Promise.resolve(this.createMockLoginResponse(credentials));
